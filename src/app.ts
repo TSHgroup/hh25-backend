@@ -11,6 +11,8 @@ import swaggerUi from "swagger-ui-express";
 
 import cors from "cors";
 
+import routes from './routes';
+
 dotenv.config();
 
 const app = express();
@@ -45,6 +47,8 @@ app.use(
     swaggerUi.serve,
     swaggerUi.setup(specs)
 );
+
+app.use("/v1/", routes);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
