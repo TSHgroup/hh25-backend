@@ -2,11 +2,11 @@
   "name": "hh25-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "dev": "nodemon --watch 'src/**/*.ts' --exec ts-node src/app.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/app.js"
   },
   "repository": {
     "type": "git",
