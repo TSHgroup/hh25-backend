@@ -73,4 +73,4 @@ const scenarioSchema = new Schema({
     ]
 })
 
-export default model("scenario", scenarioSchema);
+export default model("Scenario", scenarioSchema);
