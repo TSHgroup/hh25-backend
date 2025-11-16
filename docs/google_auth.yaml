@@ -71,16 +71,19 @@ paths:
         - Google Authentication
       summary: Authenticate with Google ID token
       description: Authenticate using a Google ID token obtained from client-side Google Sign-In
-      security:
-        - GoogleToken: []
-      parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
-          description: Google ID token (Bearer token)
-          example: Bearer ya29.a0AfH6SMBx...
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idToken
+              properties:
+                idToken:
+                  type: string
+                  description: Google ID token from client-side authentication
+                  example: eyJhbGciOiJSUzI1NiIsImtpZCI6IjY4MGE1...
       responses:
         '200':
           description: Authentication successful
@@ -113,11 +116,3 @@ paths:
                   error:
                     type: string
                     example: User is not authorized
-
-components:
-  securitySchemes:
-    GoogleToken:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: Google ID token from client-side authentication
