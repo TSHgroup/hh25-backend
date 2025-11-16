@@ -14,11 +14,11 @@ const schema = new Schema({
     },
     passwordHash: String,
     ips: {
-        type: Array<String>,
+        type: [String],
         default: [],
     },
     refreshTokens: {
-        type: Array<String>,
+        type: [String],
         default: [],
     },
     emailVerified: {

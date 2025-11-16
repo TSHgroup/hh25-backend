@@ -171,8 +171,7 @@ router.post('/refresh', async (req, res) => {
         }
 
         let valid = false;
-        // @ts-ignore
-        for (const storedHash of Array.from(account.refreshTokens || []) as string[]) {
+        for (const storedHash of account.refreshTokens) {
             if (await bcrypt.compare(refreshToken, storedHash)) {
                 valid = true;
                 break;
@@ -191,8 +190,7 @@ router.post('/refresh', async (req, res) => {
         const refreshTokens = account.refreshTokens;
         const filteredTokens = [];
 
-        // @ts-ignore
-        for (const storedToken of Array.from(refreshTokens || []) as string[]) {
+        for (const storedToken of refreshTokens) {
             if (!await bcrypt.compare(refreshToken, storedToken)) {
                 filteredTokens.push(storedToken);
             }
