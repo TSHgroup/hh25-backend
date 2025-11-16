@@ -1,5 +1,5 @@
 import express, {Request, Response} from "express";
-import ai from "../ai";
+import { gemini } from "../ai";
 
 const router = express.Router();
 
