@@ -6,12 +6,14 @@ import "dotenv/config";
 import passport from "passport";
 import './auth/jwt';
 
+import routes from './routes';
+
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 
 import cors from "cors";
 
-import routes from './routes';
+import { MJMLTemplates } from "./mail/template";
 
 dotenv.config();
 
@@ -22,12 +24,14 @@ mongoose.connect(process.env.MONGODB_URL as string)
 
 app.use(cors());
 
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 
 app.use(passport.initialize());
+
+MJMLTemplates.getInstance().populate('templates');
 
 const options = {
     definition: {

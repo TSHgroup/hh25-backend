@@ -21,17 +21,25 @@
   },
   "homepage": "https://github.com/TSHgroup/hh25-backend#readme",
   "dependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/bcrypt": "^6.0.0",
+    "@types/mjml": "^4.7.4",
+    "bcrypt": "^6.0.0",
     "@google/genai": "^1.29.1",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "handlebars": "^4.7.8",
+    "jsonwebtoken": "^9.0.2",
+    "mjml": "^4.17.0",
     "mongoose": "^8.19.3",
     "passport": "^0.7.0",
     "passport-custom": "^1.1.1",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
+    "resend": "^6.4.2",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "typescript-eslint": "^8.46.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
