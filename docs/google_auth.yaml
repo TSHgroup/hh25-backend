@@ -1,0 +1,123 @@
+tags:
+  name: Google Authentication
+  description: Google OAuth authentication endpoints
+
+paths:
+  /v1/auth/google:
+    get:
+      tags:
+        - Google Authentication
+      summary: Initiate Google OAuth flow
+      description: Redirects user to Google OAuth consent screen
+      responses:
+        '302':
+          description: Redirect to Google OAuth consent screen
+        '500':
+          description: Internal server error
+
+  /v1/auth/google/callback:
+    get:
+      tags:
+        - Google Authentication
+      summary: Google OAuth callback
+      description: Callback endpoint for Google OAuth. Returns access and refresh tokens upon successful authentication.
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: Authorization code from Google
+        - in: query
+          name: state
+          schema:
+            type: string
+          description: State parameter for CSRF protection
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: JWT access token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken:
+                    type: string
+                    description: JWT refresh token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  emailVerified:
+                    type: boolean
+                    description: Whether the user's email is verified
+                    example: true
+        '302':
+          description: Redirect to failure URL
+        '401':
+          description: User is not authorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: User is not authorized
+
+  /v1/auth/google/token:
+    get:
+      tags:
+        - Google Authentication
+      summary: Authenticate with Google ID token
+      description: Authenticate using a Google ID token obtained from client-side Google Sign-In
+      security:
+        - GoogleToken: []
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Google ID token (Bearer token)
+          example: Bearer ya29.a0AfH6SMBx...
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: JWT access token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken:
+                    type: string
+                    description: JWT refresh token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  emailVerified:
+                    type: boolean
+                    description: Whether the user's email is verified
+                    example: true
+        '302':
+          description: Redirect to failure URL
+        '401':
+          description: User is not authorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: User is not authorized
+
+components:
+  securitySchemes:
+    GoogleToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Google ID token from client-side authentication

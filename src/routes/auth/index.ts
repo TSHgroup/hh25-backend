@@ -7,7 +7,11 @@ import VerificationRequests from '../../mongodb/VerificationRequests';
 import jwt from "jsonwebtoken";
 import { sendTemplate } from '../../mail/mailer';
 
+import googleRoute from "./google";
+
 const router = Router();
+
+router.use("/google", googleRoute);
 
 // TODO: add body validation
 router.post('/register', async (req, res) => {
@@ -72,7 +76,6 @@ router.post('/emailVerify', user(), async (req, res) => {
             res.status(401).send({ error: "User not logged in" });
             return;
         }
-        // @ts-ignore
         const accountId = req.user._id;
 
         const account = await Accounts.findById(accountId);
@@ -220,6 +223,12 @@ router.post('/login', async (req, res) => {
         const account = await Accounts.findOne({ email });
         if (!account) {
             res.status(401).send({ error: "Invalid credentials" });
+            return;
+        }
+
+        // if the account doesn't have a password, it has to be an OAuth2 account
+        if (!account.passwordHash) {
+            res.status(400).send({ error: "Unsupported auth flow" });
             return;
         }
 

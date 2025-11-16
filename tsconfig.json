@@ -10,5 +10,8 @@
     "skipLibCheck": true,
     "noImplicitAny": true
   },
-  "include": ["src"]
+  "include": ["src/**/*"],
+  "files": [
+    "src/types/index.d.ts"
+  ]
 }

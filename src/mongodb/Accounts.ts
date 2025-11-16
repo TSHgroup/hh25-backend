@@ -2,17 +2,17 @@ import { Schema, model } from 'mongoose';
 
 const schema = new Schema({
     name: {
-        type: String,
+        type: {
+            givenName: String,
+            familyName: String,
+        },
         required: true,
     },
     email: {
         type: String,
         required: true,
     },
-    passwordHash: {
-        type: String,
-        required: true,
-    },
+    passwordHash: String,
     ips: {
         type: Array<String>,
         default: [],
@@ -25,6 +25,7 @@ const schema = new Schema({
         type: Boolean,
         default: false,
     },
+    googleAccount: String,
 });
 
 export default model('Account', schema);

@@ -5,6 +5,7 @@ import "dotenv/config";
 
 import passport from "passport";
 import './auth/jwt';
+import './auth/google'
 
 import routes from './routes';
 
