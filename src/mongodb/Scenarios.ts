@@ -25,7 +25,7 @@ const scenarioSchema = new Schema({
     },
     createdBy: {
         type: Schema.ObjectId,
-        ref: "user",
+        ref: "User",
         required: true
     },
     createdAt: {
@@ -41,7 +41,7 @@ const scenarioSchema = new Schema({
     },
     aiPersona: {
         type: Schema.ObjectId,
-        ref: "persona",
+        ref: "Persona",
         required: true
     },
     openingPrompt: String,
