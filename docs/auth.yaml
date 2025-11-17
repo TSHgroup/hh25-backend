@@ -28,8 +28,17 @@ paths:
                   format: password
                   example: Pracownia16
                 name:
-                  type: string
-                  example: John Doe
+                  type: object
+                  required:
+                    - givenName
+                    - familyName
+                  properties:
+                    givenName:
+                      type: string
+                      example: John
+                    familyName:
+                      type: string
+                      example: Doe
       responses:
         '201':
           description: Account created successfully
