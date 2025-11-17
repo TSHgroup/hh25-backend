@@ -20,7 +20,7 @@ export const RegisterBody = z.object({
 
 export const EmailVerifyBody = z.object({
     token: z.hex()
-        .length(32),
+        .length(64),
     code: z.string()
         .length(6)
         .refine((val) => /^[0-9]{6}$/.test(val)),

@@ -120,29 +120,33 @@ router.put('/emailVerify', validateBody(EmailVerifyBody), async (req, res) => {
     try {
         const { token, code } = req.body;
 
-        const tokenHash = await hashToken(token);
+        const requests = await VerificationRequests.find({ expiresAt: { $gt: new Date() } });
 
-        const verificationRequest = await VerificationRequests.findOne({
-            tokenHash,
-            expiresAt: { $gt: new Date() }
-        });
+        let matched = null;
+        for (const request of requests) {
+            if (await bcrypt.compare(token, request.tokenHash)) {
+                matched = request;
+                break;
+            }
+        }
 
-        if (!verificationRequest) {
+        if (!matched) {
             res.status(400).send({ error: "Invalid or expired verification token" });
             return;
         }
 
-        if (!secureCompare(code, verificationRequest.code)) {
+        if (!secureCompare(code, matched.code)) {
             res.status(400).send({ error: "Invalid verification code" });
             return;
         }
 
         await Promise.all([
             Accounts.updateOne(
-                { _id: verificationRequest.accountId },
+                { _id: matched.accountId },
                 { $set: { emailVerified: true } }
             ),
-            VerificationRequests.deleteOne({ _id: verificationRequest._id })
+            VerificationRequests.deleteOne({ _id: matched._id }),
+            VerificationRequests.deleteMany({ expiresAt: { $lt: new Date() } }),
         ]);
 
         res.send({ message: "Email verified successfully" });
