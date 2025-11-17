@@ -8,13 +8,14 @@ import jwt from "jsonwebtoken";
 import { sendTemplate } from '../../mail/mailer';
 
 import googleRoute from "./google";
+import { validateBody } from '../../middlewares/validate';
+import { EmailVerifyBody, LoginBody, RefreshBody, RegisterBody } from '../../models/AuthModels';
 
 const router = Router();
 
 router.use("/google", googleRoute);
 
-// TODO: add body validation
-router.post('/register', async (req, res) => {
+router.post('/register', validateBody(RegisterBody), async (req, res) => {
     try {
         const { email, password, name } = req.body;
         const ip = req.ip;
@@ -69,7 +70,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// TODO: add body validation
 router.post('/emailVerify', user(), async (req, res) => {
     try {
         if (!req.user) {
@@ -116,8 +116,7 @@ router.post('/emailVerify', user(), async (req, res) => {
     }
 });
 
-// TODO: add body validation
-router.put('/emailVerify', async (req, res) => {
+router.put('/emailVerify', validateBody(EmailVerifyBody), async (req, res) => {
     try {
         const { token, code } = req.body;
 
@@ -153,8 +152,7 @@ router.put('/emailVerify', async (req, res) => {
     }
 });
 
-// TODO: add body validation
-router.post('/refresh', async (req, res) => {
+router.post('/refresh', validateBody(RefreshBody), async (req, res) => {
     try {
         const { refreshToken } = req.body;
         
@@ -213,8 +211,7 @@ router.post('/refresh', async (req, res) => {
     }
 });
 
-// TODO: add body validation
-router.post('/login', async (req, res) => {
+router.post('/login', validateBody(LoginBody), async (req, res) => {
     try {
         const { email, password } = req.body;
 
