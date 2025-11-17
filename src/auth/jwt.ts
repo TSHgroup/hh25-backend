@@ -7,7 +7,7 @@ passport.use(new JWTStrategy({
     secretOrKey: process.env.JWT_SECRET as string
 }, async (payload, done) => {
     try {
-        const user = await Accounts.findById(payload.id);
+        const user = await Accounts.findById(payload.accountId);
 
         if (user) done(null, user);
         else done(null, false);
