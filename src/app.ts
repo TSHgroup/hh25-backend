@@ -40,8 +40,11 @@ const options = {
         info: {
             title: "OdpalGadkę Express API with Swagger",
             version: "1.0.0",
-            description: "OdpalGadkę API documented with Swagger",
-        }
+            description: "OdpalGadkę API documented with Swagger"
+        },
+        servers: [
+            { url: "https://odpalgadke.q1000q.cc/api/" }
+        ]
     },
     apis: ["./docs/*.yaml"],
 };
