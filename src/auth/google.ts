@@ -3,6 +3,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as CustomStrategy } from 'passport-custom';
 import { OAuth2Client } from 'google-auth-library';
 import Accounts from '../mongodb/Accounts';
+import Profiles from '../mongodb/Profiles';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID!);
 
@@ -39,6 +40,14 @@ passport.use(new GoogleStrategy({
     }, {
         new: true,
         upsert: true
+    });
+    
+    await Profiles.findOneAndUpdate({
+        account: account._id,
+    }, {
+        $setOnInsert: {
+            displayName: name ? `${name.givenName} ${name.familyName}` : 'User',
+        }
     });
 
     return done(null, account as unknown as Express.User);

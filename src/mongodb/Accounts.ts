@@ -26,6 +26,8 @@ const schema = new Schema({
         default: false,
     },
     googleAccount: String,
+}, {
+    timestamps: true
 });
 
 export default model('Account', schema);

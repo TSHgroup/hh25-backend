@@ -10,6 +10,7 @@ import { sendTemplate } from '../../mail/mailer';
 import googleRoute from "./google";
 import { validateBody } from '../../middlewares/validate';
 import { EmailVerifyBody, LoginBody, RefreshBody, RegisterBody } from '../../models/AuthModels';
+import Profiles from '../../mongodb/Profiles';
 
 const router = Router();
 
@@ -33,6 +34,11 @@ router.post('/register', validateBody(RegisterBody), async (req, res) => {
             passwordHash,
             refreshTokens: [],
             ips: [ ip ],
+        });
+
+        await Profiles.insertOne({
+            account: account._id,
+            displayName: `${name.givenName} ${name.familyName}`,
         });
 
         const accessToken = generateAccessToken(account._id.toString());

@@ -1,0 +1,139 @@
+tags:
+  name: User
+  description: User profile endpoints
+
+paths:
+  /v1/user/me:
+    get:
+      summary: Get current user information
+      description: Retrieves the authenticated user's account information and profile
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved user information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        description: User account ID
+                      email:
+                        type: string
+                        format: email
+                        description: User email address
+                      emailVerified:
+                        type: boolean
+                        description: Email verification status
+                      name:
+                        type: string
+                        description: User's name
+                  profile:
+                    $ref: '#/components/schemas/Profile'
+        '401':
+          description: Unauthorized - Authentication required
+
+  /v1/user/profile:
+    put:
+      summary: Update user profile
+      description: Updates the authenticated user's profile information
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  minLength: 1
+                  maxLength: 32
+                  pattern: '^[a-zA-Z0-9_.]{0,32}$'
+                  description: Unique username (alphanumeric, underscore, and period only)
+                displayName:
+                  type: string
+                  minLength: 1
+                  maxLength: 32
+                  description: Display name for the user
+                language:
+                  type: string
+                  description: Preferred language code
+                bio:
+                  type: string
+                  minLength: 1
+                  maxLength: 512
+                  description: User biography
+                goals:
+                  type: array
+                  minItems: 0
+                  maxItems: 5
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                  description: User's goals
+      responses:
+        '200':
+          description: Profile successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Bad request - Invalid input data
+        '401':
+          description: Unauthorized - Authentication required
+
+components:
+  schemas:
+    Profile:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Profile ID
+        account:
+          type: string
+          description: Associated account ID
+        username:
+          type: string
+          description: Username
+        displayName:
+          type: string
+          description: Display name
+        language:
+          type: string
+          description: Preferred language code
+        bio:
+          type: string
+          description: User biography
+        goals:
+          type: array
+          items:
+            type: string
+          description: User's goals
+        createdAt:
+          type: string
+          format: date-time
+          description: Profile creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Profile last update timestamp
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
