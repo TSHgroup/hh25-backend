@@ -23,7 +23,7 @@ export const ScenarioBody = z.object({
         .min(1)
         .max(5)
         .optional(),
-    status: z.literal(['draft', 'editing', 'review', 'published', 'archived', 'deleted']),
+    status: z.literal(['editing', 'published', 'archived', 'deleted']),
     objectives: z.array(z.string().min(1).max(200))
         .min(1)
         .max(5),
