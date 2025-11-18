@@ -46,4 +46,74 @@ router.post('/', user(), validateBody(ScenarioBody), async (req, res) => {
     res.send(scenario);
 });
 
+router.put('/:scenarioId', user(), validateBody(ScenarioBody), async (req, res) => {
+    const { title, subtitle, description, category, tags, languages, status, objectives, persona, openingPrompt, closingPrompt, provider, model } = req.body;
+    const { scenarioId } = req.params;
+
+    const scenario = await Scenarios.findById(scenarioId);
+
+    if (!scenario) {
+        res.status(404).send({
+            error: "Scenario not found"
+        });
+        return;
+    }
+
+    if (scenario.createdBy.toString() != req.user!._id) {
+        res.status(403).send({
+            error: "You can only edit your own scenarios"
+        });
+        return;
+    }
+
+    const edited = await Scenarios.findByIdAndUpdate(scenarioId, {
+        createdBy: req.user!._id,
+        title,
+        subtitle,
+        description,
+        category,
+        tags,
+        languages,
+        status,
+        lastUpdatedAt: new Date(),
+        objectives,
+        persona,
+        openingPrompt,
+        closingPrompt,
+        ai: {
+            provider,
+            model,
+        },
+        rounds: [],
+    }, {
+        new: true,
+    });
+
+    res.send(edited);
+});
+
+router.delete('/:scenarioId', user(), async (req, res) => {
+    const { scenarioId } = req.params;
+
+    const scenario = await Scenarios.findById(scenarioId);
+
+    if (!scenario) {
+        res.status(404).send({
+            error: "Scenario not found"
+        });
+        return;
+    }
+
+    if (scenario.createdBy.toString() != req.user!._id) {
+        res.status(403).send({
+            error: "You can only delete your own scenarios"
+        });
+        return;
+    }
+
+    const deleted = await Scenarios.findByIdAndDelete(scenarioId);
+
+    res.send(deleted);
+});
+
 export default router;

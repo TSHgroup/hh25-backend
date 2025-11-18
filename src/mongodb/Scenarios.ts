@@ -20,7 +20,7 @@ const scenarioSchema = new Schema({
     languages: [String],
     status: {
         type: String,
-        enum: ['draft', 'editing', 'review', 'published', 'archived', 'deleted'],
+        enum: ['editing', 'published', 'archived', 'deleted'],
         required: true
     },
     createdBy: {
