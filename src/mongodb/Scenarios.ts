@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from 'mongoose';
 
 const minOneValidator = (val: Array<any>) => {
     return val.length > 0;
@@ -10,22 +10,22 @@ const scenarioSchema = new Schema({
         required: true
     },
     subtitle: String,
-    describtion: String,
+    description: String,
     category: {
         type: String,
-        enum: ["business", "education", "relationships", "family", "dates", "public speaking", "other"],
+        enum: ['business', 'education', 'relationships', 'family', 'dates', 'public speaking', 'other'],
         required: true
     },
     tags: [String],
     languages: [String],
     status: {
         type: String,
-        enum: ["draft", "editing", "review", "published", "archived", "deleted"],
+        enum: ['draft', 'editing', 'review', 'published', 'archived', 'deleted'],
         required: true
     },
     createdBy: {
         type: Schema.ObjectId,
-        ref: "Profile",
+        ref: 'Profile',
         required: true
     },
     createdAt: {
@@ -39,9 +39,9 @@ const scenarioSchema = new Schema({
         required: true,
         validate: [minOneValidator, '{PATH} required at least 1 element']
     },
-    aiPersona: {
+    persona: {
         type: Schema.ObjectId,
-        ref: "Persona",
+        ref: 'Persona',
         required: true
     },
     openingPrompt: String,
@@ -51,12 +51,12 @@ const scenarioSchema = new Schema({
             provider: {
                 type: String,
                 required: true,
-                default: "gemini"
+                default: 'gemini'
             },
             model: {
                 type: String,
                 required: true,
-                default: "gemini-2.5-flash-native-audio-preview-09-2025"
+                default: 'gemini-2.5-flash-native-audio-preview-09-2025'
             }
         },
     },
@@ -73,4 +73,4 @@ const scenarioSchema = new Schema({
     ]
 })
 
-export default model("Scenario", scenarioSchema);
+export default model('Scenario', scenarioSchema);
