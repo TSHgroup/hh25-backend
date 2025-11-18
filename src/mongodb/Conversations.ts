@@ -33,7 +33,7 @@ const schema = new Schema({
             ]
         }
     ],
-    statisctics: {
+    stats: {
         emotionScore: {
             type: Number,
             validate: [scoreValidator, '{PATH} must be in range 0 to 100']

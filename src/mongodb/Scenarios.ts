@@ -13,7 +13,7 @@ const scenarioSchema = new Schema({
     describtion: String,
     category: {
         type: String,
-        enum: ["biznes", "szkoła", "relacje", "rodzina", "randka", "public speaking", "inne"],
+        enum: ["business", "education", "relationships", "family", "dates", "public speaking", "other"],
         required: true
     },
     tags: [String],
@@ -25,7 +25,7 @@ const scenarioSchema = new Schema({
     },
     createdBy: {
         type: Schema.ObjectId,
-        ref: "User",
+        ref: "Profile",
         required: true
     },
     createdAt: {
