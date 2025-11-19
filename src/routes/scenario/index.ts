@@ -20,6 +20,7 @@ router.get('/', user(), validateQuery(PaginatedQuery), async (req, res) => {
     const parsedLimit = parseInt(limit);
 
     const scenarios = await Scenarios.aggregate([
+        { $match: { public: true }},
         { $skip: (parsedPage - 1) * parsedLimit },
         { $limit: parsedLimit }
     ]);
@@ -52,6 +53,7 @@ router.post('/', user(), validateBody(ScenarioBody), async (req, res) => {
         category,
         tags,
         languages,
+        public: false,
         status,
         lastUpdatedAt: new Date(),
         objectives,
@@ -112,6 +114,58 @@ router.put('/:scenarioId', user(), validateBody(ScenarioBody), async (req, res) 
     });
 
     res.send(edited);
+});
+
+router.post('/:scenarioId/publish', user(), async (req, res) => {
+    const { scenarioId } = req.params;
+
+    const scenario = await Scenarios.findById(scenarioId);
+
+    if (!scenario) {
+        res.status(404).send({
+            error: "Scenario not found"
+        });
+        return;
+    }
+
+    if (scenario.createdBy.toString() != req.user!._id) {
+        res.status(403).send({
+            error: "You can only publish your own scenarios"
+        });
+        return;
+    }
+
+    const published = await Scenarios.findByIdAndUpdate(scenarioId, {
+        public: true
+    });
+
+    res.send(published);
+});
+
+router.delete('/:scenarioId/publish', user(), async (req, res) => {
+    const { scenarioId } = req.params;
+
+    const scenario = await Scenarios.findById(scenarioId);
+
+    if (!scenario) {
+        res.status(404).send({
+            error: "Scenario not found"
+        });
+        return;
+    }
+
+    if (scenario.createdBy.toString() != req.user!._id) {
+        res.status(403).send({
+            error: "You can only unpublish your own scenarios"
+        });
+        return;
+    }
+
+    const unpublished = await Scenarios.findByIdAndUpdate(scenarioId, {
+        public: false
+    });
+
+    res.send(unpublished);
 });
 
 router.delete('/:scenarioId', user(), async (req, res) => {

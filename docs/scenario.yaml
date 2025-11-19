@@ -1,6 +1,7 @@
 tags:
   name: Scenario
   description: Scenario endpoints
+
 paths:
   /v1/scenario/user/me:
     get:
@@ -25,7 +26,7 @@ paths:
   /v1/scenario/user/{userId}:
     get:
       summary: Get scenarios by user ID
-      description: Retrieves all scenarios created by a specific user
+      description: Retrieves all public scenarios created by a specific user
       tags:
         - Scenario
       parameters:
@@ -47,8 +48,8 @@ paths:
 
   /v1/scenario:
     get:
-      summary: Get all scenarios (paginated)
-      description: Retrieves a paginated list of all scenarios
+      summary: Get all public scenarios (paginated)
+      description: Retrieves a paginated list of all public scenarios
       tags:
         - Scenario
       security:
@@ -67,7 +68,8 @@ paths:
           schema:
             type: integer
             minimum: 1
-          description: Number of items per page
+            maximum: 100
+          description: Number of items per page (max 100)
       responses:
         '200':
           description: Successfully retrieved scenarios
@@ -94,7 +96,13 @@ paths:
                     description: First page number (always 1)
                   size:
                     type: integer
-                    description: Items size
+                    description: Number of items in current page
+        '400':
+          description: Bad request - Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
         '401':
           description: Unauthorized - Authentication required
     post:
@@ -122,11 +130,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                oneOf:
+                  - $ref: '#/components/schemas/Error'
+                  - $ref: '#/components/schemas/ValidationError'
               examples:
                 invalidModel:
                   value:
                     error: "Invalid model"
+                validationError:
+                  value:
+                    errors:
+                      - code: "invalid_type"
+                        message: "Required"
+                        path: ["title"]
         '401':
           description: Unauthorized - Authentication required
 
@@ -231,6 +247,95 @@ paths:
                   value:
                     error: "Scenario not found"
 
+  /v1/scenario/{scenarioId}/publish:
+    post:
+      summary: Publish a scenario
+      description: Makes a scenario public (only the creator can publish)
+      tags:
+        - Scenario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: scenarioId
+          required: true
+          schema:
+            type: string
+          description: Scenario ID
+      responses:
+        '200':
+          description: Scenario successfully published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+        '401':
+          description: Unauthorized - Authentication required
+        '403':
+          description: Forbidden - You can only publish your own scenarios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                forbidden:
+                  value:
+                    error: "You can only publish your own scenarios"
+        '404':
+          description: Scenario not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                notFound:
+                  value:
+                    error: "Scenario not found"
+
+    delete:
+      summary: Unpublish a scenario
+      description: Makes a scenario private (only the creator can unpublish)
+      tags:
+        - Scenario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: scenarioId
+          required: true
+          schema:
+            type: string
+          description: Scenario ID
+      responses:
+        '200':
+          description: Scenario successfully unpublished
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+        '401':
+          description: Unauthorized - Authentication required
+        '403':
+          description: Forbidden - You can only unpublish your own scenarios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                forbidden:
+                  value:
+                    error: "You can only unpublish your own scenarios"
+        '404':
+          description: Scenario not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                notFound:
+                  value:
+                    error: "Scenario not found"
+
 components:
   schemas:
     Error:
@@ -321,10 +426,10 @@ components:
           description: Closing prompt for the scenario
         provider:
           type: string
-          description: AI provider
+          description: AI provider (e.g., "gemini")
         model:
           type: string
-          description: AI model name
+          description: AI model name (must be valid for the selected provider)
 
     Scenario:
       allOf:
@@ -337,6 +442,13 @@ components:
             createdBy:
               type: string
               description: User ID of the creator
+            public:
+              type: boolean
+              description: Whether the scenario is publicly visible
+            createdAt:
+              type: string
+              format: date-time
+              description: Creation timestamp
             lastUpdatedAt:
               type: string
               format: date-time
@@ -355,10 +467,6 @@ components:
               items:
                 type: object
               description: Scenario rounds data
-            createdAt:
-              type: string
-              format: date-time
-              description: Creation timestamp
 
   securitySchemes:
     bearerAuth:

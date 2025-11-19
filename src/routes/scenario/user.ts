@@ -15,7 +15,8 @@ router.get('/:userId', async (req, res) => {
     const { userId } = req.params;
 
     const scenarios = await Scenarios.find({
-        createdBy: userId
+        createdBy: userId,
+        public: true
     });
 
     res.send(scenarios);

@@ -18,6 +18,10 @@ const scenarioSchema = new Schema({
     },
     tags: [String],
     languages: [String],
+    public: {
+        type: Boolean,
+        default: false
+    },
     status: {
         type: String,
         enum: ['editing', 'published', 'archived', 'deleted'],
