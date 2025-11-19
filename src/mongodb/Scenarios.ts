@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import "./Personas";
 
 const minOneValidator = (val: Array<any>) => {
     return val.length > 0;

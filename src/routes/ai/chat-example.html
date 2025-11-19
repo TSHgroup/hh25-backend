@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini WebSocket Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        #chat-container {
+            border: 1px solid #ddd;
+            height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user {
+            background: #007bff;
+            color: white;
+            text-align: right;
+        }
+        .ai {
+            background: #28a745;
+            color: white;
+        }
+        .system {
+            background: #ffc107;
+            color: black;
+            font-style: italic;
+        }
+        #input-container {
+            display: flex;
+            gap: 10px;
+        }
+        #message-input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #token-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #scenario-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gemini WebSocket Chat</h1>
+    
+    <input type="text" id="token-input" placeholder="Enter your JWT token">
+    <input type="text" id="scenario-input" placeholder="Enter scenario ID">
+    <button onclick="connectWebSocket()">Connect</button>
+    <button onclick="disconnectWebSocket()">Disconnect</button>
+    
+    <div id="chat-container"></div>
+    
+    <div id="input-container">
+        <input type="text" id="message-input" placeholder="Type your message..." disabled>
+        <button onclick="sendMessage()" id="send-btn" disabled>Send</button>
+        <input type="file" id="audio-input" accept="audio/*" disabled>
+        <button onclick="sendAudio()" id="audio-btn" disabled>Send Audio</button>
+    </div>
+
+    <script>
+        let ws = null;
+        let isConnected = false;
+
+        function addMessage(content, type) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = content;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function connectWebSocket() {
+            const token = document.getElementById('token-input').value;
+            const scenarioId = document.getElementById('scenario-input').value;
+
+            if (!token) {
+                alert('Please enter a JWT token');
+                return;
+            }
+
+            if (!scenarioId) {
+                alert('Please enter a scenario ID');
+                return;
+            }
+
+            // Connect to WebSocket (adjust URL as needed)
+            ws = new WebSocket(`ws://localhost:3000/v1/ai/chat?token=${token}`);
+
+            ws.onopen = () => {
+                addMessage('Connected to server', 'system');
+                isConnected = true;
+                document.getElementById('message-input').disabled = false;
+                document.getElementById('send-btn').disabled = false;
+                document.getElementById('audio-input').disabled = false;
+                document.getElementById('audio-btn').disabled = false;
+
+                // Send start message
+                ws.send(JSON.stringify({
+                    type: 'start',
+                    scenarioId: scenarioId
+                }));
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                switch(data.type) {
+                    case 'started':
+                        addMessage(`Chat started - Conversation ID: ${data.conversationId}`, 'system');
+                        break;
+                    case 'transcription':
+                        addMessage(`[Transcribed]: ${data.content}`, 'user');
+                        break;
+                    case 'response':
+                        addMessage(data.content, 'ai');
+                        
+                        // Play audio if available
+                        if (data.audio) {
+                            playAudio(data.audio);
+                        }
+                        break;
+                    case 'error':
+                        addMessage(`Error: ${data.content}`, 'system');
+                        break;
+                    case 'ended':
+                        addMessage('Chat ended', 'system');
+                        break;
+                }
+            };
+
+            ws.onclose = () => {
+                addMessage('Disconnected from server', 'system');
+                isConnected = false;
+                document.getElementById('message-input').disabled = true;
+                document.getElementById('send-btn').disabled = true;
+                document.getElementById('audio-input').disabled = true;
+                document.getElementById('audio-btn').disabled = true;
+            };
+
+            ws.onerror = (error) => {
+                addMessage('WebSocket error occurred', 'system');
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function disconnectWebSocket() {
+            if (ws && isConnected) {
+                ws.send(JSON.stringify({ type: 'end' }));
+                ws.close();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+
+            if (!message || !isConnected) return;
+
+            addMessage(message, 'user');
+
+            ws.send(JSON.stringify({
+                type: 'message',
+                content: message
+            }));
+
+            input.value = '';
+        }
+
+        function sendAudio() {
+            const input = document.getElementById('audio-input');
+            const file = input.files[0];
+
+            if (!file || !isConnected) return;
+
+            addMessage(`Sending audio: ${file.name}`, 'user');
+
+            // Read file as base64
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const base64Data = e.target.result.split(',')[1]; // Remove data:audio/...;base64, prefix
+
+                ws.send(JSON.stringify({
+                    type: 'audio',
+                    audioData: base64Data,
+                    mimeType: file.type || 'audio/webm'
+                }));
+            };
+            reader.readAsDataURL(file);
+
+            input.value = ''; // Clear file input
+        }
+
+        function playAudio(base64Audio) {
+            try {
+                // Convert base64 to array buffer
+                const binaryString = atob(base64Audio);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+
+                // Create audio context
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Decode PCM data (24kHz, 16-bit, mono, little-endian)
+                const numSamples = bytes.length / 2;
+                const buffer = audioContext.createBuffer(1, numSamples, 24000);
+                const channelData = buffer.getChannelData(0);
+                
+                // Convert 16-bit signed PCM to float32 (little-endian)
+                const dataView = new DataView(bytes.buffer);
+                for (let i = 0; i < numSamples; i++) {
+                    const int16 = dataView.getInt16(i * 2, true); // true = little-endian
+                    channelData[i] = int16 / 32768.0; // Normalize to -1.0 to 1.0
+                }
+
+                // Play the audio
+                const source = audioContext.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioContext.destination);
+                source.start(0);
+
+                addMessage('🔊 Playing audio response', 'system');
+            } catch (error) {
+                console.error('Error playing audio:', error);
+                addMessage('Failed to play audio', 'system');
+            }
+        }
+
+        // Send message on Enter key
+        document.getElementById('message-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
