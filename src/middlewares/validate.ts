@@ -15,11 +15,11 @@ export const validateBody = (validator: ZodObject) => {
     }
 }
 
-export const validateParams = (validator: ZodObject) => {
+export const validateQuery = (validator: ZodObject) => {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
             const validated = validator.parse(req.query);
-            req.query = validated as { [key: string]: string };
+            (req as any).validated = validated as { [key: string]: string };
             next();
         } catch (error) {
             res.status(400).send({
