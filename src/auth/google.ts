@@ -23,7 +23,7 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: "/v1/auth/google/callback",
+    callbackURL: process.env.PRODUCTION == "true" ? "/api/v1/auth/google/callback" : "/v1/auth/google/callback",
     scope: ['email', 'profile']
 }, async (_accessToken, _refreshToken, profile, done) => {
     const { id, name, emails } = profile;
