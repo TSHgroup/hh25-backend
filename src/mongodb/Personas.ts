@@ -6,6 +6,7 @@ const personaSchema = new Schema({
     personality: String,
     voice: String,
     responseStyle: String,
+    informations: String,
     emotionModel: {
         type: {
             baseline: String,
