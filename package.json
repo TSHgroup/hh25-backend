@@ -26,6 +26,7 @@
     "@types/bcrypt": "^6.0.0",
     "@types/mjml": "^4.7.4",
     "@types/passport-google-oauth20": "^2.0.17",
+    "@types/ws": "^8.18.1",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
@@ -42,6 +43,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "typescript-eslint": "^8.46.4",
+    "ws": "^8.18.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
