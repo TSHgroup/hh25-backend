@@ -1,7 +1,6 @@
 tags:
   name: Scenario
   description: Scenario endpoints
-
 paths:
   /v1/scenario/user/me:
     get:
@@ -47,6 +46,57 @@ paths:
                   $ref: '#/components/schemas/Scenario'
 
   /v1/scenario:
+    get:
+      summary: Get all scenarios (paginated)
+      description: Retrieves a paginated list of all scenarios
+      tags:
+        - Scenario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Page number
+        - in: query
+          name: limit
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Number of items per page
+      responses:
+        '200':
+          description: Successfully retrieved scenarios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Scenario'
+                  page:
+                    type: integer
+                    description: Current page number
+                  limit:
+                    type: integer
+                    description: Number of items per page
+                  lastPage:
+                    type: integer
+                    description: Last page number
+                  firstPage:
+                    type: integer
+                    description: First page number (always 1)
+                  size:
+                    type: integer
+                    description: Items size
+        '401':
+          description: Unauthorized - Authentication required
     post:
       summary: Create a new scenario
       description: Creates a new scenario for the authenticated user

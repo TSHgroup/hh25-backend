@@ -3,14 +3,36 @@ import { Router } from 'express';
 import userRouter from './user';
 import user from '../../middlewares/user';
 import Scenarios from '../../mongodb/Scenarios';
-import { validateBody } from '../../middlewares/validate';
+import { validateBody, validateParams } from '../../middlewares/validate';
 import { ScenarioBody } from '../../models/ScenarioModels';
 
 import models from '../../../data/models.json';
+import { PaginatedQuery } from '../../models/GeneralModels';
 
 const router = Router();
 
 router.use('/user', user(), userRouter);
+
+router.get('/', user(), validateParams(PaginatedQuery), async (req, res) => {
+    const { page, limit } = req.query as Record<string, string>;
+
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+
+    const scenarios = await Scenarios.aggregate([
+        { $skip: (parsedPage - 1) * parsedLimit },
+        { $limit: parsedLimit }
+    ]);
+
+    res.send({
+        result: scenarios,
+        page: parsedPage,
+        limit: parsedLimit,
+        lastPage: Math.ceil((await Scenarios.countDocuments()) / parsedLimit),
+        firstPage: 1,
+        size: scenarios.length,
+    });
+});
 
 router.post('/', user(), validateBody(ScenarioBody), async (req, res) => {
     const { title, subtitle, description, category, tags, languages, status, objectives, persona, openingPrompt, closingPrompt, provider, model } = req.body;

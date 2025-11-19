@@ -14,3 +14,17 @@ export const validateBody = (validator: ZodObject) => {
         }
     }
 }
+
+export const validateParams = (validator: ZodObject) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const validated = validator.parse(req.query);
+            req.query = validated as { [key: string]: string };
+            next();
+        } catch (error) {
+            res.status(400).send({
+                errors: (error as ZodError).issues 
+            });
+        }
+    }
+}
