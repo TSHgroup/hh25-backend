@@ -61,7 +61,7 @@ const scenarioSchema = new Schema({
             model: {
                 type: String,
                 required: true,
-                default: 'gemini-2.5-flash-native-audio-preview-09-2025'
+                default: 'gemini-2.5-flash'
             }
         },
     },
@@ -70,7 +70,7 @@ const scenarioSchema = new Schema({
             prompt: String,
             expectedResponseType: String,
             emotion: String,
-            userEmotionTarger: String,
+            userEmotionTarget: String,
             tips: [String],
             keywordsRequired: [String],
             keywordsBanned: [String]
