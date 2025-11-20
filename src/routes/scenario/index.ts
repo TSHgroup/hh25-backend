@@ -13,7 +13,7 @@ const router = Router();
 
 router.use('/user', user(), userRouter);
 
-router.get('/', user(), validateQuery(PaginatedQuery), async (req, res) => {
+router.get('/', validateQuery(PaginatedQuery), async (req, res) => {
     const { page, limit } = (req as any).validated as Record<string, string>;
 
     const parsedPage = parseInt(page);
