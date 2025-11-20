@@ -4,8 +4,11 @@ import { validateBody, validateQuery } from '../../middlewares/validate';
 import { PaginatedQuery } from '../../models/GeneralModels';
 import user from '../../middlewares/user';
 import { PersonaBody } from '../../models/PersonaModels';
+import userRouter from './user';
 
 const router = Router();
+
+router.use('/', user(), userRouter);
 
 router.get('/', user(), validateQuery(PaginatedQuery), async (req, res) => {
     const { page, limit } = (req as any).validated as Record<string, string>;
