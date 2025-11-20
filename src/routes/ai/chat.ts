@@ -85,39 +85,40 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
         return;
     }
 
-    const roundId = new Types.ObjectId().toString();
-
-    // Get scenario and persona for voice settings
+    // Get scenario
     const scenario = await Scenarios.findById(message.scenarioId).populate('persona');
-    const voiceName = scenario?.persona ? (scenario.persona as any).voice : 'Kore';
+
+    // Get round
+    const roundId = message.roundId || new Types.ObjectId().toString();
+    const round = scenario?.rounds?.find(r => r._id.toString() === roundId);
+
+    // Get persona
+    const persona = scenario?.persona as any;
+    const voiceName = persona ? (persona as any).voice : 'Kore';
+
+    // Specific prompts
+    const openingPrompt = scenario?.openingPrompt as string;
+
+    const roundPrompt = round?.prompt;
+    const roundEmotion = round?.emotion;
 
     const session: ChatSession = {
         userId: userId,
         scenarioId: message.scenarioId,
         roundId: roundId,
-        chatHistory: 'You are a helpful AI assistant engaging in a conversation with a user. Be natural, friendly, and conversational.\n\n',
+        chatHistory: `You are AI that take a later given role and pretends to be later given persona, your goal is to best mimic this persona with their emotions and act naturally for scenario provided. Opening prompt: ${openingPrompt}. Your name is: ${persona?.name}. Your role is: ${persona?.role}. You are: ${persona?.personality}. You respond in ${persona?.responseStyle} style. This are overall informations about you: ${persona?.informations}. You are under ${roundEmotion} emotions. ${roundPrompt}.`,
         voiceName: voiceName
     };
 
-    // Create or update conversation document
-    const conversation = await Conversations.findOneAndUpdate(
-        {
-            user: userId,
-            scenario: message.scenarioId
-        },
-        {
-            $push: {
-                rounds: {
-                    roundId: new Types.ObjectId(roundId),
-                    transcript: []
-                }
-            }
-        },
-        {
-            upsert: true,
-            new: true
-        }
-    );
+    // Create a new conversation document for each chat session
+    const conversation = await Conversations.create({
+        user: userId,
+        scenario: message.scenarioId,
+        rounds: [{
+            roundId: new Types.ObjectId(roundId),
+            transcript: []
+        }]
+    });
 
     session.conversationId = conversation._id.toString();
     sessions.set(ws, session);
