@@ -136,6 +136,50 @@ paths:
           description: Unauthorized - Authentication required
 
   /v1/persona/{personaId}:
+    get:
+      summary: Get a persona by ID
+      description: Retrieves a specific persona. Returns public personas or private personas owned by the authenticated user.
+      tags:
+        - Persona
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: personaId
+          required: true
+          schema:
+            type: string
+          description: Persona ID
+      responses:
+        '200':
+          description: Successfully retrieved persona
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+        '401':
+          description: Unauthorized - Authentication required
+        '403':
+          description: Forbidden - This persona is private
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                private:
+                  value:
+                    error: "This persona is private"
+        '404':
+          description: Persona not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                notFound:
+                  value:
+                    error: "Persona not found"
+
     put:
       summary: Update a persona
       description: Updates an existing persona (only the creator can update)

@@ -147,6 +147,49 @@ paths:
           description: Unauthorized - Authentication required
 
   /v1/scenario/{scenarioId}:
+    get:
+      summary: Get a scenario by ID
+      description: Retrieves a specific scenario. Returns public scenarios or private scenarios owned by the authenticated user.
+      tags:
+        - Scenario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: scenarioId
+          required: true
+          schema:
+            type: string
+          description: Scenario ID
+      responses:
+        '200':
+          description: Successfully retrieved scenario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+        '401':
+          description: Unauthorized - Authentication required
+        '403':
+          description: Forbidden - This scenario is private
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/Error'
+              examples:
+                private:
+                  value:
+                    error: "This scenario is private"
+        '404':
+          description: Scenario not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                notFound:
+                  value:
+                    error: "Scenario not found"
     put:
       summary: Update a scenario
       description: Updates an existing scenario (only the creator can update)

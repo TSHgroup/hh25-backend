@@ -51,6 +51,28 @@ router.post('/', user(), validateBody(PersonaBody), async (req, res) => {
     res.send(persona);
 });
 
+router.get('/:personaId', user(), async (req, res) => {
+    const { personaId } = req.params;
+    
+    const persona = await Personas.findById(personaId);
+
+    if (!persona) {
+        res.status(404).send({
+            error: "Persona not found"
+        });
+        return;
+    }
+
+    if (!persona.public && persona.createdBy.toString() != req.user!._id) {
+        res.status(403).send({
+            error: "This persona is private"
+        });
+        return;
+    }
+
+    res.send(persona);
+});
+
 router.put('/:personaId', user(), validateBody(PersonaBody), async (req, res) => {
     const { name, role, personality, voice, responseStyle, informations, model, adapt, maxResponseTokens} = req.body;
     const { personaId } = req.params;

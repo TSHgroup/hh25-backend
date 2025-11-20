@@ -35,6 +35,28 @@ router.get('/', user(), validateQuery(PaginatedQuery), async (req, res) => {
     });
 });
 
+router.get('/:scenarioId', user(), async (req, res) => {
+    const { scenarioId } = req.params;
+    
+    const scenario = await Scenarios.findById(scenarioId);
+
+    if (!scenario) {
+        res.status(404).send({
+            error: "Scenario not found"
+        });
+        return;
+    }
+
+    if (!scenario.public && scenario.createdBy.toString() != req.user!._id) {
+        res.status(403).send({
+            error: "This scenario is private"
+        });
+        return;
+    }
+
+    res.send(scenario);
+});
+
 router.post('/', user(), validateBody(ScenarioBody), async (req, res) => {
     const { title, subtitle, description, category, tags, languages, status, objectives, persona, openingPrompt, closingPrompt, provider, model } = req.body;
 
