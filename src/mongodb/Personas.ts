@@ -17,7 +17,16 @@ const personaSchema = new Schema({
         type: Number,
         required: true,
         default: 0
-    }
-})
+    },
+    public: {
+        type: Boolean,
+        default: false
+    },
+    createdBy: {
+        type: Schema.ObjectId,
+        ref: 'Profile',
+        required: true
+    },
+});
 
 export default model("Persona", personaSchema);

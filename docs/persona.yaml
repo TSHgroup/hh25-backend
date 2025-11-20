@@ -1,0 +1,441 @@
+tags:
+  name: Persona
+  description: Persona endpoints
+
+paths:
+  /v1/persona/user/me:
+    get:
+      summary: Get current user's personas
+      description: Retrieves all personas created by the authenticated user
+      tags:
+        - Persona
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved user's personas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Persona'
+        '401':
+          description: Unauthorized - Authentication required
+
+  /v1/persona/user/{userId}:
+    get:
+      summary: Get personas by user ID
+      description: Retrieves all public personas created by a specific user
+      tags:
+        - Persona
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Successfully retrieved user's personas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Persona'
+
+  /v1/persona:
+    get:
+      summary: Get all public personas (paginated)
+      description: Retrieves a paginated list of all public personas
+      tags:
+        - Persona
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Page number
+        - in: query
+          name: limit
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Number of items per page (max 100)
+      responses:
+        '200':
+          description: Successfully retrieved personas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Persona'
+                  page:
+                    type: integer
+                    description: Current page number
+                  limit:
+                    type: integer
+                    description: Number of items per page
+                  lastPage:
+                    type: integer
+                    description: Last page number
+                  firstPage:
+                    type: integer
+                    description: First page number (always 1)
+                  size:
+                    type: integer
+                    description: Number of items in current page
+        '400':
+          description: Bad request - Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Unauthorized - Authentication required
+
+    post:
+      summary: Create a new persona
+      description: Creates a new persona for the authenticated user
+      tags:
+        - Persona
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonaInput'
+      responses:
+        '200':
+          description: Persona successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+        '400':
+          description: Bad request - Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Unauthorized - Authentication required
+
+  /v1/persona/{personaId}:
+    put:
+      summary: Update a persona
+      description: Updates an existing persona (only the creator can update)
+      tags:
+        - Persona
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: personaId
+          required: true
+          schema:
+            type: string
+          description: Persona ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonaInput'
+      responses:
+        '200':
+          description: Persona successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+        '400':
+          description: Bad request - Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Unauthorized - Authentication required
+        '403':
+          description: Forbidden - You can only edit your own personas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                forbidden:
+                  value:
+                    error: "You can only edit your own personas"
+        '404':
+          description: Persona not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                notFound:
+                  value:
+                    error: "Persona not found"
+
+    delete:
+      summary: Delete a persona
+      description: Deletes an existing persona (only the creator can delete)
+      tags:
+        - Persona
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: personaId
+          required: true
+          schema:
+            type: string
+          description: Persona ID
+      responses:
+        '200':
+          description: Persona successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+        '401':
+          description: Unauthorized - Authentication required
+        '403':
+          description: Forbidden - You can only delete your own personas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                forbidden:
+                  value:
+                    error: "You can only delete your own personas"
+        '404':
+          description: Persona not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                notFound:
+                  value:
+                    error: "Persona not found"
+
+  /v1/persona/{personaId}/publish:
+    post:
+      summary: Publish a persona
+      description: Makes a persona public (only the creator can publish)
+      tags:
+        - Persona
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: personaId
+          required: true
+          schema:
+            type: string
+          description: Persona ID
+      responses:
+        '200':
+          description: Persona successfully published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+        '401':
+          description: Unauthorized - Authentication required
+        '403':
+          description: Forbidden - You can only publish your own personas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                forbidden:
+                  value:
+                    error: "You can only publish your own personas"
+        '404':
+          description: Persona not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                notFound:
+                  value:
+                    error: "Persona not found"
+
+    delete:
+      summary: Unpublish a persona
+      description: Makes a persona private (only the creator can unpublish)
+      tags:
+        - Persona
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: personaId
+          required: true
+          schema:
+            type: string
+          description: Persona ID
+      responses:
+        '200':
+          description: Persona successfully unpublished
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+        '401':
+          description: Unauthorized - Authentication required
+        '403':
+          description: Forbidden - You can only unpublish your own personas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                forbidden:
+                  value:
+                    error: "You can only unpublish your own personas"
+        '404':
+          description: Persona not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                notFound:
+                  value:
+                    error: "Persona not found"
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+      required:
+        - error
+
+    ValidationError:
+      type: object
+      properties:
+        errors:
+          type: array
+          description: An array of all validation errors
+      required:
+        - errors
+
+    PersonaInput:
+      type: object
+      required:
+        - name
+        - role
+        - personality
+        - voice
+        - responseStyle
+        - model
+        - adapt
+        - maxResponseTokens
+      properties:
+        name:
+          type: string
+          description: Persona name
+        role:
+          type: string
+          description: Persona role
+        personality:
+          type: string
+          description: Persona personality traits
+        voice:
+          type: string
+          description: Persona voice characteristics
+        responseStyle:
+          type: string
+          description: How the persona responds
+        informations:
+          type: string
+          description: Additional information about the persona
+        model:
+          type: string
+          description: Baseline emotion model
+        adapt:
+          type: boolean
+          description: Whether the emotion model adapts during conversation
+        maxResponseTokens:
+          type: integer
+          minimum: 1
+          description: Maximum number of tokens in persona responses
+
+    Persona:
+      allOf:
+        - type: object
+          properties:
+            _id:
+              type: string
+              description: Persona ID
+            createdBy:
+              type: string
+              description: User ID of the creator
+            public:
+              type: boolean
+              description: Whether the persona is publicly visible
+            name:
+              type: string
+              description: Persona name
+            role:
+              type: string
+              description: Persona role
+            personality:
+              type: string
+              description: Persona personality traits
+            voice:
+              type: string
+              description: Persona voice characteristics
+            responseStyle:
+              type: string
+              description: How the persona responds
+            informations:
+              type: string
+              description: Additional information about the persona
+            emotionModel:
+              type: object
+              properties:
+                baseline:
+                  type: string
+                  description: Baseline emotion model
+                adapt:
+                  type: boolean
+                  description: Whether the emotion model adapts
+            maxResponseTokens:
+              type: integer
+              description: Maximum number of tokens in responses
+            createdAt:
+              type: string
+              format: date-time
+              description: Creation timestamp
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
