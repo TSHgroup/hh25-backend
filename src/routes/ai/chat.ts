@@ -8,6 +8,9 @@ import { createUserContent, createPartFromUri } from '@google/genai';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync, readFileSync } from 'fs';
+import Handlebars from "handlebars";
+import Profiles from '../../mongodb/Profiles';
+import Accounts from '../../mongodb/Accounts';
 
 interface ChatMessage {
     type: 'message' | 'audio' | 'start' | 'end';
@@ -86,14 +89,18 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
     }
 
     // Get scenario
-    const scenario = await Scenarios.findById(message.scenarioId).populate('persona');
+    const scenario = {... await Scenarios.findById(message.scenarioId).populate('persona') };
 
     // Get round
     const roundId = message.roundId || new Types.ObjectId().toString();
     const round = scenario?.rounds?.find(r => r._id.toString() === roundId);
 
+    const profile = Profiles.findById(userId);
+    const account = Accounts.findById(userId);
+    const name = (account as any).name;
+
     // Get persona
-    const persona = scenario?.persona as any;
+    const persona = { ... scenario?.persona as any };
     const voiceName = persona ? (persona as any).voice : 'Kore';
 
     // Specific prompts
@@ -102,20 +109,20 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
     const roundPrompt = round?.prompt;
     const roundEmotion = round?.emotion;
 
-    const promptRaw = readFileSync(join(process.cwd(), "data", "main.prompt"));
+    const promptRaw = readFileSync(join(process.cwd(), "data", "main.prompt"), 'utf-8');
     const prompt = Handlebars.compile(promptRaw);
 
     const session: ChatSession = {
         userId: userId,
         scenarioId: message.scenarioId,
         roundId: roundId,
-        chatHistory: prompt({ persona, scenario }),
+        chatHistory: prompt({ persona, scenario, profile, name }),
         voiceName: voiceName
     };
 
     // Create a new conversation document for each chat session
     const conversation = await Conversations.create({
-        user: userId,
+        user: new Types.ObjectId(userId),
         scenario: message.scenarioId,
         rounds: [{
             roundId: new Types.ObjectId(roundId),
