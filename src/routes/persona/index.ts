@@ -68,7 +68,7 @@ router.get('/:personaId', user(), async (req, res) => {
         return;
     }
 
-    if (!persona.public && persona.createdBy.toString() != req.user!._id) {
+    if (!persona.public && persona.createdBy?.toString() != req.user!._id) {
         res.status(403).send({
             error: "This persona is private"
         });
