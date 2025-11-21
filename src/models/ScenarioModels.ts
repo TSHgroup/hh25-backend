@@ -31,6 +31,14 @@ export const ScenarioBody = z.object({
         .max(5),
     persona: z.hex()
         .length(24),
+    openingPrompt: z.string()
+        .min(1)
+        .max(300)
+        .optional(),
+    closingPrompt: z.string()
+        .min(1)
+        .max(300)
+        .optional(),
     provider: z.literal(Object.keys(models)),
     model: z.literal(Object.values(models).flat()),
 });
