@@ -23,6 +23,11 @@ const schema = new Schema({
     },
     goals: [String],
     bio: String,
+    gender: {
+        type: String,
+        enum: ["male", "female", "other"],
+        required: true,
+    },
 }, {
     timestamps: true
 });
