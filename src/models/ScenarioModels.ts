@@ -14,7 +14,9 @@ export const ScenarioBody = z.object({
         .min(1)
         .max(512)
         .optional(),
-    category: z.literal(['business', 'education', 'relationships', 'family', 'dates', 'public speaking']),
+    category: z.string()
+        .min(1)
+        .max(50),
     tags: z.array(z.string().min(1).max(50))
         .min(0)
         .max(5)
