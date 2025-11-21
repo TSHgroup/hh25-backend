@@ -8,7 +8,7 @@ import userRouter from './user';
 
 const router = Router();
 
-router.use('/', user(), userRouter);
+router.use('/user', user(), userRouter);
 
 router.get('/', user(), validateQuery(PaginatedQuery), async (req, res) => {
     const { page, limit } = (req as any).validated as Record<string, string>;
@@ -57,7 +57,9 @@ router.post('/', user(), validateBody(PersonaBody), async (req, res) => {
 router.get('/:personaId', user(), async (req, res) => {
     const { personaId } = req.params;
     
-    const persona = await Personas.findById(personaId);
+    const persona = await Personas.findOne({
+        _id: personaId
+    });
 
     if (!persona) {
         res.status(404).send({
