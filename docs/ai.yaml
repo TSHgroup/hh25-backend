@@ -1,0 +1,29 @@
+tags:
+  name: AI
+  description: AI endpoints
+
+paths:
+  /v1/ai/voices:
+    get:
+      summary: Get available AI voices
+      tags:
+        - AI
+      responses:
+        '200':
+          description: AI voices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Voice name
+                    gender:
+                      type: string
+                      description: Voice gender
+                    style:
+                      type: string
+                      description: Voice style

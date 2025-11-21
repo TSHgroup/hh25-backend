@@ -50,7 +50,8 @@ const options = {
             description: "OdpalGadkę API documented with Swagger"
         },
         servers: [
-            { url: "https://odpalgadke.q1000q.cc/api/" }
+            { url: "https://odpalgadke.q1000q.cc/api/" },
+            { url: `http://localhost:${PORT}/` }
         ]
     },
     apis: ["./docs/*.yaml"],
