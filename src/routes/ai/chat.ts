@@ -7,7 +7,7 @@ import { Types } from 'mongoose';
 import { createUserContent, createPartFromUri } from '@google/genai';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 
 interface ChatMessage {
     type: 'message' | 'audio' | 'start' | 'end';
@@ -102,11 +102,14 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
     const roundPrompt = round?.prompt;
     const roundEmotion = round?.emotion;
 
+    const promptRaw = readFileSync(join(process.cwd(), "data", "main.prompt"));
+    const prompt = Handlebars.compile(promptRaw);
+
     const session: ChatSession = {
         userId: userId,
         scenarioId: message.scenarioId,
         roundId: roundId,
-        chatHistory: `You are AI that take a later given role and pretends to be later given persona, your goal is to best mimic this persona with their emotions and act naturally for scenario provided. Opening prompt: ${openingPrompt}. Your name is: ${persona?.name}. Your role is: ${persona?.role}. You are: ${persona?.personality}. You respond in ${persona?.responseStyle} style. This are overall informations about you: ${persona?.informations}. You are under ${roundEmotion} emotions. ${roundPrompt}.`,
+        chatHistory: prompt({ persona, scenario }),
         voiceName: voiceName
     };
 
