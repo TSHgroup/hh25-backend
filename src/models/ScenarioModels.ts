@@ -41,4 +41,23 @@ export const ScenarioBody = z.object({
         .optional(),
     provider: z.literal(Object.keys(models)),
     model: z.literal(Object.values(models).flat()),
+    rounds: z.array(z.object({
+        prompt: z.string()
+            .min(1),
+        expectedResponseType: z.string()
+            .min(1)
+            .optional(),
+        emotion: z.string()
+            .min(1)
+            .optional(),
+        userEmotionTarget: z.string()
+            .min(1)
+            .optional(),
+        tips: z.array(z.string().min(1))
+            .optional(),
+        keywordsRequired: z.array(z.string().min(1))
+            .optional(),
+        keywordsBanned: z.array(z.string().min(1))
+            .optional()
+    })).min(1)
 });

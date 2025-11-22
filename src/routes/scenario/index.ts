@@ -58,7 +58,7 @@ router.get('/:scenarioId', user(), async (req, res) => {
 });
 
 router.post('/', user(), validateBody(ScenarioBody), async (req, res) => {
-    const { title, subtitle, description, category, tags, languages, status, objectives, persona, openingPrompt, closingPrompt, provider, model } = req.body;
+    const { title, subtitle, description, category, tags, languages, status, objectives, persona, openingPrompt, closingPrompt, provider, model, rounds } = req.body;
 
     if (!(models as Record<string, string[]>)[provider].includes(model)) {
         res.status(400).send({
@@ -86,14 +86,14 @@ router.post('/', user(), validateBody(ScenarioBody), async (req, res) => {
             provider,
             model,
         },
-        rounds: [],
+        rounds,
     });
 
     res.send(scenario);
 });
 
 router.put('/:scenarioId', user(), validateBody(ScenarioBody), async (req, res) => {
-    const { title, subtitle, description, category, tags, languages, status, objectives, persona, openingPrompt, closingPrompt, provider, model } = req.body;
+    const { title, subtitle, description, category, tags, languages, status, objectives, persona, openingPrompt, closingPrompt, provider, model, rounds } = req.body;
     const { scenarioId } = req.params;
 
     const scenario = await Scenarios.findById(scenarioId);
@@ -130,7 +130,7 @@ router.put('/:scenarioId', user(), validateBody(ScenarioBody), async (req, res) 
             provider,
             model,
         },
-        rounds: [],
+        rounds,
     }, {
         new: true,
     });

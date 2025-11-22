@@ -471,6 +471,40 @@ components:
         model:
           type: string
           description: AI model name (must be valid for the selected provider)
+        rounds:
+          type: array
+          items:
+            type: object
+            properties:
+              prompt:
+                type: string
+                description: Prompt for this round
+              expectedResponseType:
+                type: string
+                description: Expected type of response
+              emotion:
+                type: string
+                description: Emotion for this round
+              userEmotionTarget:
+                type: string
+                description: Target emotion for the user
+              tips:
+                type: array
+                items:
+                  type: string
+                description: Tips for this round
+              keywordsRequired:
+                type: array
+                items:
+                  type: string
+                description: Keywords required in user's response
+              keywordsBanned:
+                type: array
+                items:
+                  type: string
+                description: Keywords banned from user's response
+          description: Array of scenario rounds
+
 
     Scenario:
       allOf:
