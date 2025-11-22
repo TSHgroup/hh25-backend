@@ -93,7 +93,7 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
 
     // Get round
     const roundId = message.roundId || new Types.ObjectId().toString();
-    const round = scenario?.rounds?.find(r => r._id.toString() === roundId);
+    const currentRound = scenario?.rounds?.find(r => r._id.toString() === roundId);
 
     const profile = Profiles.findById(userId);
     const account = Accounts.findById(userId);
@@ -103,12 +103,6 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
     const persona = { ... scenario?.persona as any };
     const voiceName = persona ? (persona as any).voice : 'Kore';
 
-    // Specific prompts
-    const openingPrompt = scenario?.openingPrompt as string;
-
-    const roundPrompt = round?.prompt;
-    const roundEmotion = round?.emotion;
-
     const promptRaw = readFileSync(join(process.cwd(), "data", "main.prompt"), 'utf-8');
     const prompt = Handlebars.compile(promptRaw);
 
@@ -116,7 +110,7 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
         userId: userId,
         scenarioId: message.scenarioId,
         roundId: roundId,
-        chatHistory: prompt({ persona, scenario, profile, name }),
+        chatHistory: prompt({ persona, scenario, profile, name, currentRound }),
         voiceName: voiceName
     };
 
