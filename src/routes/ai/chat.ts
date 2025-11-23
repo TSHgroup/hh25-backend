@@ -168,7 +168,16 @@ async function handleChatMessage(ws: WebSocket, message: ChatMessage) {
         session.chatHistory += `Assistant: ${aiResponse}\n`;
 
         // Generate audio response
-        const audioData = await generateAudioResponse(aiResponse, session.voiceName);
+        const audioResult = await generateAudioResponse(aiResponse, session.voiceName);
+
+        // Check if audio generation failed
+        if (audioResult.audio === null) {
+            ws.send(JSON.stringify({ 
+                type: 'error', 
+                content: `Failed to generate audio response: ${audioResult.error || 'Unknown error'}`
+            }));
+            return;
+        }
 
         // Save to database
         await Conversations.findOneAndUpdate(
@@ -198,7 +207,7 @@ async function handleChatMessage(ws: WebSocket, message: ChatMessage) {
         ws.send(JSON.stringify({ 
             type: 'response', 
             content: aiResponse,
-            audio: audioData // base64 PCM audio data
+            audio: audioResult.audio // base64 PCM audio data
         }));
 
     } catch (error) {
@@ -298,7 +307,16 @@ async function handleAudioMessage(ws: WebSocket, message: ChatMessage) {
         session.chatHistory += `Assistant: ${aiResponse}\n`;
 
         // Generate audio response
-        const audioData = await generateAudioResponse(aiResponse, session.voiceName);
+        const audioResult = await generateAudioResponse(aiResponse, session.voiceName);
+
+        // Check if audio generation failed
+        if (audioResult.audio === null) {
+            ws.send(JSON.stringify({ 
+                type: 'error', 
+                content: `Failed to generate audio response: ${audioResult.error || 'Unknown error'}`
+            }));
+            return;
+        }
 
         // Save to database with transcribed text
         await Conversations.findOneAndUpdate(
@@ -333,7 +351,7 @@ async function handleAudioMessage(ws: WebSocket, message: ChatMessage) {
         ws.send(JSON.stringify({ 
             type: 'response', 
             content: aiResponse,
-            audio: audioData // base64 PCM audio data
+            audio: audioResult.audio // base64 PCM audio data
         }));
 
     } catch (error) {
@@ -345,7 +363,7 @@ async function handleAudioMessage(ws: WebSocket, message: ChatMessage) {
     }
 }
 
-async function generateAudioResponse(text: string, voiceName: string = 'Kore'): Promise<string | null> {
+async function generateAudioResponse(text: string, voiceName: string = 'Kore'): Promise<{ audio: string | null; error?: string }> {
     try {
         // Use a conversational prompt for better TTS quality
         const response = await gemini.models.generateContent({
@@ -366,10 +384,14 @@ async function generateAudioResponse(text: string, voiceName: string = 'Kore'): 
         });
 
         const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-        return audioData || null;
+        if (!audioData) {
+            return { audio: null, error: 'No audio data returned from API' };
+        }
+        return { audio: audioData };
     } catch (error) {
         console.error('Error generating audio:', error);
-        return null;
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        return { audio: null, error: errorMessage };
     }
 }
 
