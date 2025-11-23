@@ -33,6 +33,12 @@ interface ChatSession {
     startTime: number;
 }
 
+interface ScoringResult {
+    emotionScore: number;
+    fluencyScore: number;
+    wordingScore: number;
+}
+
 const sessions = new Map<WebSocket, ChatSession>();
 
 export async function handleChatWebSocket(ws: WebSocket, userId: string) {
@@ -172,7 +178,10 @@ async function handleChatMessage(ws: WebSocket, message: ChatMessage) {
         // Generate audio response
         const audioResult = await generateAudioResponse(aiResponse, session.voiceName);
 
-        // Save to database
+        // Analyze user communication for scoring (text-based)
+        const scores = await analyzeUserCommunication(undefined, message.content);
+
+        // Save to database with scores
         await Conversations.findOneAndUpdate(
             {
                 _id: session.conversationId,
@@ -192,6 +201,11 @@ async function handleChatMessage(ws: WebSocket, message: ChatMessage) {
                             emotions: ''
                         }
                     ]
+                },
+                $set: {
+                    'stats.emotionScore': scores.emotionScore,
+                    'stats.fluencyScore': scores.fluencyScore,
+                    'stats.wordingScore': scores.wordingScore
                 }
             }
         );
@@ -309,7 +323,14 @@ async function handleAudioMessage(ws: WebSocket, message: ChatMessage) {
         // Generate audio response
         const audioResult = await generateAudioResponse(aiResponse, session.voiceName);
 
-        // Save to database with transcribed text
+        // Analyze user communication for scoring (audio-based)
+        const scores = await analyzeUserCommunication(
+            uploadedFile.uri,
+            transcribedText,
+            uploadedFile.mimeType || mimeType
+        );
+
+        // Save to database with transcribed text and scores
         await Conversations.findOneAndUpdate(
             {
                 _id: session.conversationId,
@@ -329,6 +350,11 @@ async function handleAudioMessage(ws: WebSocket, message: ChatMessage) {
                             emotions: ''
                         }
                     ]
+                },
+                $set: {
+                    'stats.emotionScore': scores.emotionScore,
+                    'stats.fluencyScore': scores.fluencyScore,
+                    'stats.wordingScore': scores.wordingScore
                 }
             }
         );
@@ -391,6 +417,74 @@ async function generateAudioResponse(text: string, voiceName: string = 'Kore'): 
         console.error('Error generating audio:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         return { audio: null, error: errorMessage };
+    }
+}
+
+/**
+ * Analyzes user communication for emotion, fluency, and wording quality
+ * @param audioUri - Optional Gemini file URI for audio analysis
+ * @param text - Text content to analyze (used if no audio provided)
+ * @param audioMimeType - MIME type of the audio file
+ * @returns Scores for emotion, fluency, and wording (0-100)
+ */
+async function analyzeUserCommunication(audioUri?: string, text?: string, audioMimeType?: string): Promise<ScoringResult> {
+    try {
+        const analysisPrompt = `Analyze the following user communication and provide scores from 0 to 100 for:
+
+1. **Emotion Score**: How well the user expresses appropriate emotions. Consider tone, enthusiasm, empathy, and emotional authenticity. Score 0-100.
+
+2. **Fluency Score**: How smoothly and naturally the user communicates. Consider pace, hesitations, filler words, clarity, and overall flow. Score 0-100.
+
+3. **Wording Score**: How effectively the user chooses words. Consider vocabulary appropriateness, clarity, conciseness, and word choice quality. Score 0-100.
+
+Provide your response ONLY in the following JSON format with no additional text:
+{
+  "emotionScore": <number 0-100>,
+  "fluencyScore": <number 0-100>,
+  "wordingScore": <number 0-100>
+}`;
+
+        let contentParts: any[];
+        
+        if (audioUri && audioMimeType) {
+            // Analyze from audio
+            contentParts = [
+                createPartFromUri(audioUri, audioMimeType),
+                analysisPrompt
+            ];
+        } else if (text) {
+            // Analyze from text
+            contentParts = [
+                `User said: "${text}"\n\n${analysisPrompt}`
+            ];
+        } else {
+            throw new Error('Either audioUri or text must be provided for analysis');
+        }
+
+        const response = await gemini.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: createUserContent(contentParts),
+            config: {
+                thinkingConfig: {
+                    thinkingBudget: 0
+                },
+                responseMimeType: 'application/json'
+            }
+        });
+
+        const responseText = response.text || '{}';
+        const scores = JSON.parse(responseText) as ScoringResult;
+        
+        // Validate and clamp scores to 0-100 range
+        const emotionScore = Math.max(0, Math.min(100, Math.round(scores.emotionScore || 50)));
+        const fluencyScore = Math.max(0, Math.min(100, Math.round(scores.fluencyScore || 50)));
+        const wordingScore = Math.max(0, Math.min(100, Math.round(scores.wordingScore || 50)));
+        
+        return { emotionScore, fluencyScore, wordingScore };
+    } catch (error) {
+        console.error('Error analyzing user communication:', error);
+        // Return default scores on error
+        return { emotionScore: 50, fluencyScore: 50, wordingScore: 50 };
     }
 }
 
