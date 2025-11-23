@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import Profiles from '../../mongodb/Profiles';
-import { validateBody } from '../../middlewares/validate';
+import { validateBody, validateQuery } from '../../middlewares/validate';
 import { ProfileBody } from '../../models/UserModels';
+import { PaginatedQuery } from '../../models/GeneralModels';
+import Conversations from '../../mongodb/Conversations';
 
 const router = Router();
 
@@ -28,6 +30,29 @@ router.put('/profile', validateBody(ProfileBody), async (req, res) => {
     );
     
     res.send(profile);
+});
+
+router.get('/me/conversations', validateQuery(PaginatedQuery), async (req, res) => {
+    const { page, limit } = (req as any).validated as Record<string, string>;
+
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+
+    const conversations = await Conversations.aggregate([
+        { $match: { _id: req.user!._id }},
+        { $sort: { createdAt: -1 } },
+        { $skip: (parsedPage - 1) * parsedLimit },
+        { $limit: parsedLimit }
+    ]);
+
+    res.send({
+        result: conversations,
+        page: parsedPage,
+        limit: parsedLimit,
+        lastPage: Math.ceil((await Conversations.countDocuments({ _id: req.user!._id })) / parsedLimit),
+        firstPage: 1,
+        size: conversations.length,
+    });
 });
 
 export default router;

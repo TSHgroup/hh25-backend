@@ -46,7 +46,10 @@ const schema = new Schema({
             type: Number,
             validate: [scoreValidator, '{PATH} must be in range 0 to 100']
         },
-    }
+    },
+    length: Number
+}, {
+    timestamps: true
 });
 
 export default model('Conversations', schema);

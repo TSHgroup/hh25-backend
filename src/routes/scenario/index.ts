@@ -29,7 +29,7 @@ router.get('/', validateQuery(PaginatedQuery), async (req, res) => {
         result: scenarios,
         page: parsedPage,
         limit: parsedLimit,
-        lastPage: Math.ceil((await Scenarios.countDocuments()) / parsedLimit),
+        lastPage: Math.ceil((await Scenarios.countDocuments({ public: true })) / parsedLimit),
         firstPage: 1,
         size: scenarios.length,
     });

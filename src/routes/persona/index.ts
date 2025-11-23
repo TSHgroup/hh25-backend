@@ -26,7 +26,7 @@ router.get('/', user(), validateQuery(PaginatedQuery), async (req, res) => {
         result: personas,
         page: parsedPage,
         limit: parsedLimit,
-        lastPage: Math.ceil((await Personas.countDocuments()) / parsedLimit),
+        lastPage: Math.ceil((await Personas.countDocuments({ public: true })) / parsedLimit),
         firstPage: 1,
         size: personas.length,
     });

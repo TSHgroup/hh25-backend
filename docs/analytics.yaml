@@ -1,0 +1,88 @@
+tags:
+  name: Analytics
+  description: User conversation analytics and statistics
+
+paths:
+  /v1/analytics:
+    get:
+      summary: Get user analytics and trends
+      tags:
+        - Analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: span
+          schema:
+            type: string
+            example: "7d"
+          description: Time span for analytics (e.g., "7d", "30d", "1y"). Supports ms format.
+      responses:
+        '200':
+          description: Analytics data with trends and current streak
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trends:
+                    type: object
+                    description: Comparison trends between current and previous period
+                    properties:
+                      emotionScore:
+                        type: number
+                        description: Emotion score change percentage
+                      fluencyScore:
+                        type: number
+                        description: Fluency score change percentage
+                      wordingScore:
+                        type: number
+                        description: Wording score change percentage
+                  currentStreak:
+                    type: integer
+                    description: Current daily conversation streak
+                    example: 5
+                  analytics:
+                    type: object
+                    description: Current period analytics
+                    properties:
+                      totalConversations:
+                        type: integer
+                        description: Total number of conversations
+                      averageEmotionScore:
+                        type: number
+                        description: Average emotion score (0-100)
+                      averageFluencyScore:
+                        type: number
+                        description: Average fluency score (0-100)
+                      averageWordingScore:
+                        type: number
+                        description: Average wording score (0-100)
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not logged in"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

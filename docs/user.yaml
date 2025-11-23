@@ -95,6 +95,62 @@ paths:
         '401':
           description: Unauthorized - Authentication required
 
+  /v1/user/me/conversations:
+    get:
+      summary: Get user conversations
+      description: Retrieves paginated list of user's conversations
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Successfully retrieved conversations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+                  page:
+                    type: integer
+                    description: Current page number
+                  limit:
+                    type: integer
+                    description: Items per page
+                  lastPage:
+                    type: integer
+                    description: Last page number
+                  firstPage:
+                    type: integer
+                    description: First page number (always 1)
+                  size:
+                    type: integer
+                    description: Number of items in current page
+        '400':
+          description: Bad request - Invalid query parameters
+        '401':
+          description: Unauthorized - Authentication required
+
 components:
   schemas:
     Profile:
@@ -131,6 +187,71 @@ components:
           type: string
           format: date-time
           description: Profile last update timestamp
+
+    Conversation:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Conversation ID
+        user:
+          type: string
+          description: User ID
+        scenario:
+          type: string
+          description: Scenario ID
+        rounds:
+          type: array
+          items:
+            type: object
+            properties:
+              roundId:
+                type: string
+                description: Round ID
+              transcript:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    side:
+                      type: string
+                      enum: [AI, user]
+                      description: Speaker side
+                    text:
+                      type: string
+                      description: Transcript text
+                    emotions:
+                      type: string
+                      description: Detected emotions
+        stats:
+          type: object
+          properties:
+            emotionScore:
+              type: number
+              minimum: 0
+              maximum: 100
+              description: Emotion score (0-100)
+            fluencyScore:
+              type: number
+              minimum: 0
+              maximum: 100
+              description: Fluency score (0-100)
+            wordingScore:
+              type: number
+              minimum: 0
+              maximum: 100
+              description: Wording score (0-100)
+        length:
+          type: number
+          description: Conversation length
+        createdAt:
+          type: string
+          format: date-time
+          description: Conversation creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Conversation last update timestamp
 
   securitySchemes:
     bearerAuth:
