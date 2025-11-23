@@ -42,7 +42,7 @@ export const analyzeConversations = (conversations: Conversation[]) => {
     }
 }
 
-const getTrend = (a: number, b: number) => ({ previous: a, current: b, amount: (b / a) - 1 })
+const getTrend = (a: number, b: number) => (b / a) - 1;
 
 export const calculateTrends = (previous: ConversationAnalysis, current: ConversationAnalysis) => {
     return {
