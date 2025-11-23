@@ -30,6 +30,7 @@ interface ChatSession {
     roundId: string;
     chatHistory: string;
     voiceName?: string;
+    startTime: number;
 }
 
 const sessions = new Map<WebSocket, ChatSession>();
@@ -111,7 +112,8 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
         scenarioId: message.scenarioId,
         roundId: roundId,
         chatHistory: prompt({ persona, scenario, profile, name, currentRound }),
-        voiceName: voiceName
+        voiceName: voiceName,
+        startTime: Date.now()
     };
 
     // Create a new conversation document for each chat session
@@ -393,7 +395,15 @@ async function generateAudioResponse(text: string, voiceName: string = 'Kore'): 
 }
 
 async function saveConversationTranscript(session: ChatSession) {
-    // This function is called on session end or disconnect
-    // Additional processing could be added here if needed
-    console.log(`Saving conversation for user ${session.userId}, round ${session.roundId}`);
+    // Calculate conversation length in seconds
+    const endTime = Date.now();
+    const lengthInSeconds = Math.floor((endTime - session.startTime) / 1000);
+    
+    // Update conversation with length
+    await Conversations.findByIdAndUpdate(
+        session.conversationId,
+        { length: lengthInSeconds }
+    );
+    
+    console.log(`Saving conversation for user ${session.userId}, round ${session.roundId}, length: ${lengthInSeconds}s`);
 }
