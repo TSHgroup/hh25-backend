@@ -29,15 +29,20 @@ paths:
                     type: object
                     description: Comparison trends between current and previous period
                     properties:
+                      conversations:
+                        type: integer
+                        description: Conversations amount change (decimal)
+                      totalLength:
+                        type: integer
                       emotionScore:
                         type: number
-                        description: Emotion score change percentage
+                        description: Emotion score change (decimal)
                       fluencyScore:
                         type: number
-                        description: Fluency score change percentage
+                        description: Fluency score change (decimal)
                       wordingScore:
                         type: number
-                        description: Wording score change percentage
+                        description: Wording score change (decimal)
                   currentStreak:
                     type: integer
                     description: Current daily conversation streak
@@ -46,16 +51,18 @@ paths:
                     type: object
                     description: Current period analytics
                     properties:
-                      totalConversations:
+                      conversations:
                         type: integer
                         description: Total number of conversations
-                      averageEmotionScore:
+                      totalLength:
+                        type: integer
+                      averageEmotion:
                         type: number
                         description: Average emotion score (0-100)
-                      averageFluencyScore:
+                      averageFluency:
                         type: number
                         description: Average fluency score (0-100)
-                      averageWordingScore:
+                      averageWording:
                         type: number
                         description: Average wording score (0-100)
         '400':
