@@ -170,15 +170,6 @@ async function handleChatMessage(ws: WebSocket, message: ChatMessage) {
         // Generate audio response
         const audioResult = await generateAudioResponse(aiResponse, session.voiceName);
 
-        // Check if audio generation failed
-        if (audioResult.audio === null) {
-            ws.send(JSON.stringify({ 
-                type: 'error', 
-                content: `Failed to generate audio response: ${audioResult.error || 'Unknown error'}`
-            }));
-            return;
-        }
-
         // Save to database
         await Conversations.findOneAndUpdate(
             {
@@ -203,12 +194,19 @@ async function handleChatMessage(ws: WebSocket, message: ChatMessage) {
             }
         );
 
-        // Send AI response back to client
-        ws.send(JSON.stringify({ 
+        // Send AI response back to client (always send text, include error if audio failed)
+        const responseMessage: any = { 
             type: 'response', 
-            content: aiResponse,
-            audio: audioResult.audio // base64 PCM audio data
-        }));
+            content: aiResponse
+        };
+        
+        if (audioResult.audio) {
+            responseMessage.audio = audioResult.audio;
+        } else {
+            responseMessage.audioError = audioResult.error || 'Failed to generate audio';
+        }
+        
+        ws.send(JSON.stringify(responseMessage));
 
     } catch (error) {
         console.error('Error in chat message:', error);
@@ -309,15 +307,6 @@ async function handleAudioMessage(ws: WebSocket, message: ChatMessage) {
         // Generate audio response
         const audioResult = await generateAudioResponse(aiResponse, session.voiceName);
 
-        // Check if audio generation failed
-        if (audioResult.audio === null) {
-            ws.send(JSON.stringify({ 
-                type: 'error', 
-                content: `Failed to generate audio response: ${audioResult.error || 'Unknown error'}`
-            }));
-            return;
-        }
-
         // Save to database with transcribed text
         await Conversations.findOneAndUpdate(
             {
@@ -348,11 +337,19 @@ async function handleAudioMessage(ws: WebSocket, message: ChatMessage) {
             content: transcribedText 
         }));
 
-        ws.send(JSON.stringify({ 
+        // Always send text response, include error if audio failed
+        const responseMessage: any = { 
             type: 'response', 
-            content: aiResponse,
-            audio: audioResult.audio // base64 PCM audio data
-        }));
+            content: aiResponse
+        };
+        
+        if (audioResult.audio) {
+            responseMessage.audio = audioResult.audio;
+        } else {
+            responseMessage.audioError = audioResult.error || 'Failed to generate audio';
+        }
+        
+        ws.send(JSON.stringify(responseMessage));
 
     } catch (error) {
         console.error('Error in audio message:', error);
