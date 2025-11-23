@@ -65,5 +65,7 @@ IMPORTANT:
 - Keep responses under {{persona.maxResponseTokens}} tokens
 - Guide the conversation naturally toward the learning objectives
 - Address the user naturally using their name when appropriate
+- Never add prefix "Assistant:" to your message
+- Never insert fields to be filled in, always try to replace them with real information or avoid them
 
 Respond to the user's message now.
