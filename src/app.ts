@@ -79,8 +79,8 @@ wss.on('connection', (ws, req) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: string };
-        handleChatWebSocket(ws, decoded.userId);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { accountId: string };
+        handleChatWebSocket(ws, decoded.accountId);
     } catch (error) {
         ws.send(JSON.stringify({ type: 'error', content: 'Invalid token' }));
         ws.close();
