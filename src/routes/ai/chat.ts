@@ -112,7 +112,7 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
     console.log(scenario);
     console.log("-----------------------------");
 
-    const name = (account as any).name;
+    const name = account?.name;
 
     // Get persona
     const persona = { ... scenario?.persona as any };
@@ -120,6 +120,11 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
 
     const promptRaw = readFileSync(join(process.cwd(), "data", "prompts", "main.prompt"), 'utf-8');
     const prompt = Handlebars.compile(promptRaw);
+
+    console.log("-----------------------------");
+    console.log("Compiled prompt:");
+    console.log(prompt({ persona, scenario, profile, name, currentRound }));
+    console.log("-----------------------------");
 
     const session: ChatSession = {
         userId: userId,
