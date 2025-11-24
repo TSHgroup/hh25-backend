@@ -5,21 +5,21 @@ import models from '../../data/models.json';
 export const ScenarioBody = z.object({
     title: z.string()
         .min(1)
-        .max(130),
+        .max(200),
     subtitle: z.string()
         .min(1)
-        .max(200)
+        .max(400)
         .optional(),
     description: z.string()
         .min(1)
-        .max(512)
+        .max(1000)
         .optional(),
     category: z.string()
         .min(1)
         .max(50),
     tags: z.array(z.string().min(1).max(50))
         .min(0)
-        .max(5)
+        .max(10)
         .optional(),
     languages: z.array(z.literal(languages.map(l => l.code)))
         .min(1)
@@ -28,16 +28,16 @@ export const ScenarioBody = z.object({
     status: z.literal(['editing', 'published', 'archived', 'deleted']),
     objectives: z.array(z.string().min(1).max(200))
         .min(1)
-        .max(5),
+        .max(10),
     persona: z.hex()
         .length(24),
     openingPrompt: z.string()
         .min(1)
-        .max(300)
+        .max(1000)
         .optional(),
     closingPrompt: z.string()
         .min(1)
-        .max(300)
+        .max(1000)
         .optional(),
     provider: z.literal(Object.keys(models)),
     model: z.literal(Object.values(models).flat()),
