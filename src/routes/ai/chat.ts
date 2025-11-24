@@ -96,7 +96,7 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
     }
 
     // Get scenario
-    const scenario = {... await Scenarios.findById(message.scenarioId).populate('persona') };
+    const scenario = await Scenarios.findById(message.scenarioId).populate('persona');
 
     // Get round
     const roundId = message.roundId || new Types.ObjectId().toString();
@@ -115,7 +115,7 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
     const name = account?.name;
 
     // Get persona
-    const persona = { ... scenario?.persona as any };
+    const persona = scenario?.persona;
     const voiceName = persona ? (persona as any).voice : 'Kore';
 
     const promptRaw = readFileSync(join(process.cwd(), "data", "prompts", "main.prompt"), 'utf-8');
