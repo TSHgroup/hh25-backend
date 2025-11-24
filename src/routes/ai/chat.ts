@@ -123,14 +123,14 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
 
     console.log("-----------------------------");
     console.log("Compiled prompt:");
-    console.log(prompt({ persona, scenario, profile, name, currentRound }));
+    console.log(prompt({ persona, scenario, profile, name, currentRound }, { allowProtoPropertiesByDefault: true }));
     console.log("-----------------------------");
 
     const session: ChatSession = {
         userId: userId,
         scenarioId: message.scenarioId,
         roundId: roundId,
-        chatHistory: prompt({ persona, scenario, profile, name, currentRound }),
+        chatHistory: prompt({ persona, scenario, profile, name, currentRound }, { allowProtoPropertiesByDefault: true }),
         voiceName: voiceName,
         startTime: Date.now()
     };
