@@ -110,7 +110,7 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
     const persona = { ... scenario?.persona as any };
     const voiceName = persona ? (persona as any).voice : 'Kore';
 
-    const promptRaw = readFileSync(join(process.cwd(), "data", "main.prompt"), 'utf-8');
+    const promptRaw = readFileSync(join(process.cwd(), "data", "prompts", "main.prompt"), 'utf-8');
     const prompt = Handlebars.compile(promptRaw);
 
     const session: ChatSession = {
@@ -429,20 +429,7 @@ async function generateAudioResponse(text: string, voiceName: string = 'Kore'): 
  */
 async function analyzeUserCommunication(audioUri?: string, text?: string, audioMimeType?: string): Promise<ScoringResult> {
     try {
-        const analysisPrompt = `Analyze the following user communication and provide scores from 0 to 100 for:
-
-1. **Emotion Score**: How well the user expresses appropriate emotions. Consider tone, enthusiasm, empathy, and emotional authenticity. Score 0-100.
-
-2. **Fluency Score**: How smoothly and naturally the user communicates. Consider pace, hesitations, filler words, clarity, and overall flow. Score 0-100.
-
-3. **Wording Score**: How effectively the user chooses words. Consider vocabulary appropriateness, clarity, conciseness, and word choice quality. Score 0-100.
-
-Provide your response ONLY in the following JSON format with no additional text:
-{
-  "emotionScore": <number 0-100>,
-  "fluencyScore": <number 0-100>,
-  "wordingScore": <number 0-100>
-}`;
+        const analysisPrompt = readFileSync(join(process.cwd(), 'data', 'prompts', 'analysis.prompt'), 'utf-8');
 
         let contentParts: any[];
         

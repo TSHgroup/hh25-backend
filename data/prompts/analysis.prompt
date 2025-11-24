@@ -1,0 +1,14 @@
+Analyze the following user communication and provide scores from 0 to 100 for:
+
+1. **Emotion Score**: How well the user expresses appropriate emotions. Consider tone, enthusiasm, empathy, and emotional authenticity. Score 0-100.
+
+2. **Fluency Score**: How smoothly and naturally the user communicates. Consider pace, hesitations, filler words, clarity, and overall flow. Score 0-100.
+
+3. **Wording Score**: How effectively the user chooses words. Consider vocabulary appropriateness, clarity, conciseness, and word choice quality. Score 0-100.
+
+Provide your response ONLY in the following JSON format with no additional text:
+{
+  "emotionScore": <number 0-100>,
+  "fluencyScore": <number 0-100>,
+  "wordingScore": <number 0-100>
+}
