@@ -102,8 +102,8 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
     const roundId = message.roundId || new Types.ObjectId().toString();
     const currentRound = scenario?.rounds?.find(r => r._id.toString() === roundId);
 
-    const profile = Profiles.findById(userId);
-    const account = Accounts.findById(userId);
+    const profile = await Profiles.findOne({ account: userId });
+    const account = await Accounts.findById(userId);
     const name = (account as any).name;
 
     // Get persona
