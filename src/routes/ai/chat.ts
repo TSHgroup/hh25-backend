@@ -104,6 +104,14 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
 
     const profile = await Profiles.findOne({ account: userId });
     const account = await Accounts.findById(userId);
+    console.log("-----------------------------");
+    console.log("New conversation started by:");
+    console.log(account);
+    console.log(profile);
+    console.log("On scenario:");
+    console.log(scenario);
+    console.log("-----------------------------");
+
     const name = (account as any).name;
 
     // Get persona
