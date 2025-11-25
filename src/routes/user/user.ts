@@ -55,4 +55,19 @@ router.get('/me/conversations', validateQuery(PaginatedQuery), async (req, res) 
     });
 });
 
+router.get('/me/conversations/:conversationId', async (req, res) => {
+    const { conversationId } = req.params;
+    console.log("test");
+    const conversation = await Conversations.findOne({ 
+        _id: conversationId, 
+        user: req.user!._id 
+    });
+
+    if (!conversation) {
+        return res.status(404).send({ error: 'Conversation not found' });
+    }
+
+    res.send(conversation);
+})
+
 export default router;
