@@ -1,0 +1,43 @@
+tags:
+  name: Daily Tips
+  description: Daily mental health tips endpoints
+
+paths:
+  /v1/daily-tip:
+    get:
+      summary: Get daily tip
+      description: Returns a daily speaking tip that changes once per day based on day of year
+      tags:
+        - Daily Tips
+      responses:
+        '200':
+          description: Daily tip retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tip:
+                    type: string
+                    description: The daily speaking tip
+                    example: "Take a few deep breaths and focus on the present moment"
+        '404':
+          description: No tips available
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No daily tips available"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"

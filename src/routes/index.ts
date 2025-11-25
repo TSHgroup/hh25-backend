@@ -7,6 +7,7 @@ import aiRoute from './ai';
 import scenarioRoute from './scenario';
 import personaRoute from './persona';
 import analyticsRoute from './analytics';
+import dailyTipRoute from './daily-tip';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/ai', aiRoute);
 router.use('/scenario', scenarioRoute);
 router.use('/persona', personaRoute);
 router.use('/analytics', user(), analyticsRoute);
+router.use('/daily-tip', dailyTipRoute);
 
 export default router;
