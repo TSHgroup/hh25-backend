@@ -39,7 +39,7 @@ router.get('/me/conversations', validateQuery(PaginatedQuery), async (req, res) 
     const parsedLimit = parseInt(limit);
 
     const conversations = await Conversations.aggregate([
-        { $match: { _id: req.user!._id }},
+        { $match: { user: req.user!._id }},
         { $sort: { createdAt: -1 } },
         { $skip: (parsedPage - 1) * parsedLimit },
         { $limit: parsedLimit }
@@ -49,7 +49,7 @@ router.get('/me/conversations', validateQuery(PaginatedQuery), async (req, res) 
         result: conversations,
         page: parsedPage,
         limit: parsedLimit,
-        lastPage: Math.ceil((await Conversations.countDocuments({ _id: req.user!._id })) / parsedLimit),
+        lastPage: Math.ceil((await Conversations.countDocuments({ user: req.user!._id })) / parsedLimit),
         firstPage: 1,
         size: conversations.length,
     });
