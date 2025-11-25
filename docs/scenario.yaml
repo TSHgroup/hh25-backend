@@ -424,7 +424,6 @@ components:
           description: Scenario description
         category:
           type: string
-          enum: [business, education, relationships, family, dates, public speaking]
           description: Scenario category
         tags:
           type: array

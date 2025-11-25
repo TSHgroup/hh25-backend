@@ -14,7 +14,6 @@ const scenarioSchema = new Schema({
     description: String,
     category: {
         type: String,
-        enum: ['business', 'education', 'relationships', 'family', 'dates', 'public speaking', 'other'],
         required: true
     },
     tags: [String],
