@@ -31,6 +31,7 @@ interface ChatSession {
     chatHistory: string;
     voiceName?: string;
     startTime: number;
+    timeoutId?: NodeJS.Timeout;
 }
 
 interface ScoringResult {
@@ -40,6 +41,38 @@ interface ScoringResult {
 }
 
 const sessions = new Map<WebSocket, ChatSession>();
+const INACTIVITY_TIMEOUT = 3 * 60 * 1000; // 3 minutes in milliseconds
+
+function resetInactivityTimeout(ws: WebSocket, session: ChatSession) {
+    // Clear existing timeout
+    if (session.timeoutId) {
+        clearTimeout(session.timeoutId);
+    }
+
+    // Set new timeout
+    session.timeoutId = setTimeout(async () => {
+        console.log(`Session timeout for user ${session.userId} - no activity for 3 minutes`);
+        
+        // Save conversation and clean up
+        if (session.conversationId) {
+            await saveConversationTranscript(session);
+        }
+        
+        // Notify client about timeout
+        try {
+            ws.send(JSON.stringify({ 
+                type: 'timeout', 
+                content: 'Session ended due to inactivity (3 minutes)' 
+            }));
+        } catch (error) {
+            console.error('Error sending timeout message:', error);
+        }
+        
+        // Close connection
+        sessions.delete(ws);
+        ws.close();
+    }, INACTIVITY_TIMEOUT);
+}
 
 export async function handleChatWebSocket(ws: WebSocket, userId: string) {
     console.log('New chat WebSocket connection established');
@@ -76,9 +109,15 @@ export async function handleChatWebSocket(ws: WebSocket, userId: string) {
     ws.on('close', async () => {
         console.log('WebSocket connection closed');
         const session = sessions.get(ws);
-        if (session && session.conversationId) {
+        if (session) {
+            // Clear timeout
+            if (session.timeoutId) {
+                clearTimeout(session.timeoutId);
+            }
             // Save any pending conversation data
-            await saveConversationTranscript(session);
+            if (session.conversationId) {
+                await saveConversationTranscript(session);
+            }
         }
         sessions.delete(ws);
     });
@@ -104,13 +143,6 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
 
     const profile = await Profiles.findOne({ account: userId });
     const account = await Accounts.findById(userId);
-    console.log("-----------------------------");
-    console.log("New conversation started by:");
-    console.log(account);
-    console.log(profile);
-    console.log("On scenario:");
-    console.log(scenario);
-    console.log("-----------------------------");
 
     const name = account?.name;
 
@@ -120,11 +152,6 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
 
     const promptRaw = readFileSync(join(process.cwd(), "data", "prompts", "main.prompt"), 'utf-8');
     const prompt = Handlebars.compile(promptRaw);
-
-    console.log("-----------------------------");
-    console.log("Compiled prompt:");
-    console.log(prompt({ persona, scenario, profile, name, currentRound }, { allowProtoPropertiesByDefault: true }));
-    console.log("-----------------------------");
 
     const session: ChatSession = {
         userId: userId,
@@ -148,6 +175,9 @@ async function handleChatStart(ws: WebSocket, message: ChatMessage, userId: stri
     session.conversationId = conversation._id.toString();
     sessions.set(ws, session);
 
+    // Start inactivity timeout
+    resetInactivityTimeout(ws, session);
+
     ws.send(JSON.stringify({ 
         type: 'started', 
         conversationId: conversation._id.toString(),
@@ -169,6 +199,9 @@ async function handleChatMessage(ws: WebSocket, message: ChatMessage) {
     }
 
     try {
+        // Reset inactivity timeout on user message
+        resetInactivityTimeout(ws, session);
+
         // Add user message to history
         session.chatHistory += `User: ${message.content}\n`;
 
@@ -254,6 +287,11 @@ async function handleChatEnd(ws: WebSocket, message: ChatMessage) {
         return;
     }
 
+    // Clear timeout
+    if (session.timeoutId) {
+        clearTimeout(session.timeoutId);
+    }
+
     await saveConversationTranscript(session);
 
     sessions.delete(ws);
@@ -274,6 +312,9 @@ async function handleAudioMessage(ws: WebSocket, message: ChatMessage) {
     }
 
     try {
+        // Reset inactivity timeout on user audio message
+        resetInactivityTimeout(ws, session);
+
         // Determine file extension from mimeType
         const mimeType = message.mimeType || 'audio/webm';
         const extension = mimeType.split('/')[1] || 'webm';
