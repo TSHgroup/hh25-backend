@@ -29,15 +29,29 @@ export interface ConversationAnalysis {
 }
 
 export const analyzeConversations = (conversations: Conversation[]) => {
-    const [ averageEmotion, averageFluency, averageWording ] = conversations.map(c => [c.stats.emotionScore, c.stats.fluencyScore, c.stats.wordingScore]).reduce((acc, c) => (acc[0] += c[0], acc[1] += c[1], acc[2] += c[2], acc), [0, 0, 0]).map(t => t / conversations.length);
+    if (conversations.length === 0) {
+        return {
+            averageEmotion: 0,
+            averageFluency: 0,
+            averageWording: 0,
+            totalLength: 0,
+            conversations: 0,
+        };
+    }
 
-    const totalLength = conversations.reduce((acc, c) => acc + c.length, 0);
+    const totals = conversations.reduce((acc, c) => {
+        acc.emotion += c.stats?.emotionScore ?? 0;
+        acc.fluency += c.stats?.fluencyScore ?? 0;
+        acc.wording += c.stats?.wordingScore ?? 0;
+        acc.length += c.length ?? 0;
+        return acc;
+    }, { emotion: 0, fluency: 0, wording: 0, length: 0 });
 
     return {
-        averageEmotion,
-        averageFluency,
-        averageWording,
-        totalLength,
+        averageEmotion: totals.emotion / conversations.length,
+        averageFluency: totals.fluency / conversations.length,
+        averageWording: totals.wording / conversations.length,
+        totalLength: totals.length,
         conversations: conversations.length,
     }
 }
