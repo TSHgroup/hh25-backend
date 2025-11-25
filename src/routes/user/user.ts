@@ -4,6 +4,7 @@ import { validateBody, validateQuery } from '../../middlewares/validate';
 import { ProfileBody } from '../../models/UserModels';
 import { PaginatedQuery } from '../../models/GeneralModels';
 import Conversations from '../../mongodb/Conversations';
+import Scenarios from '../../mongodb/Scenarios';
 
 const router = Router();
 
@@ -42,7 +43,36 @@ router.get('/me/conversations', validateQuery(PaginatedQuery), async (req, res) 
         { $match: { user: req.user!._id }},
         { $sort: { createdAt: -1 } },
         { $skip: (parsedPage - 1) * parsedLimit },
-        { $limit: parsedLimit }
+        { $limit: parsedLimit },
+        {
+            $lookup: {
+                from: 'scenarios',
+                let: { scenarioId: '$scenario' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ['$_id', '$$scenarioId'] }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            title: 1,
+                            subtitle: 1,
+                            description: 1,
+                            category: 1
+                        }
+                    }
+                ],
+                as: 'scenarioData'
+            }
+        },
+        {
+            $unwind: {
+                path: '$scenarioData',
+                preserveNullAndEmptyArrays: true
+            }
+        }
     ]);
 
     res.send({
