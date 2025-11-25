@@ -12,11 +12,11 @@ Backend for OdpalGadke - an intelligent conversation trainer.
 - Express.js
 - MongoDB
 - JWT
-- Swagger
+- Passport
+- bcrypt
 - Resend
 - Handlebars
 - MJML
+- Swagger
 - zod
 - WebSocket
-- Passport
-- bcrypt
